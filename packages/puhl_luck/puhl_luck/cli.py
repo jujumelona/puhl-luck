@@ -21,6 +21,19 @@ for stream in (sys.stdout, sys.stderr):
 DEFAULT_BRAIN_DIR = Path("brain_data")
 DEFAULT_DATA_DIR = Path("data")
 TRAIN_HINT = "put files in data/ and run: puhl-luck train"
+COMMAND_NAMES = {
+    "start", "s",
+    "train", "t", "learn",
+    "chat", "c",
+    "ask", "q",
+    "ask-batch", "batch", "b",
+    "ask-stdin",
+    "recall",
+    "status",
+    "inspect",
+    "forget",
+    "explain",
+}
 
 
 def json_safe(value: Any) -> Any:
@@ -79,6 +92,33 @@ def resolve_training_data_path(data_arg: Optional[str]) -> Path:
     if DEFAULT_DATA_DIR.exists():
         return DEFAULT_DATA_DIR
     raise SystemExit(f"no training data path provided and default folder does not exist: {DEFAULT_DATA_DIR}\n{TRAIN_HINT}")
+
+
+def brain_dir_from_load_path(value: str) -> Optional[Path]:
+    path = Path(value)
+    if path.is_file() and path.name in {"brain_memory.pkl", "brain_rank_micro.pmr", "brain_meta.json"}:
+        return path.parent
+    if path.is_dir() and (
+        (path / "brain_memory.pkl").exists()
+        or (path / "brain_rank_micro.pmr").exists()
+        or (path / "brain_meta.json").exists()
+    ):
+        return path
+    return None
+
+
+def normalize_default_argv(argv: List[str]) -> List[str]:
+    if not argv:
+        return ["chat"] if (DEFAULT_BRAIN_DIR / "brain_memory.pkl").exists() else ["start"]
+    first = argv[0]
+    if first.startswith("-") or first in COMMAND_NAMES:
+        return argv
+    brain_dir = brain_dir_from_load_path(first)
+    if brain_dir is not None:
+        return ["--brain-dir", str(brain_dir), "chat", *argv[1:]]
+    if len(argv) >= 2:
+        return ["ask", argv[0], argv[1], *argv[2:]]
+    return ["chat"]
 
 
 def iter_training_inputs(data_path: Path) -> Iterable[tuple[str, Any]]:
@@ -249,14 +289,14 @@ def open_brain_for_rank(args, explain: bool = False) -> tuple[BrainStore, Option
 
 def cmd_train(args) -> None:
     brain = open_brain(args)
-    data_path = resolve_training_data_path(args.data)
+    data_path = resolve_training_data_path(args.data_path or args.data)
     learned = brain.learn_data_path(data_path, epochs=args.epochs, micro_hash_bits=args.micro_hash_bits)
     print(f"data: {data_path}")
     print(f"trained: {learned} events")
     print(f"saved full: {brain.memory_path}")
     print(f"saved micro: {brain.micro_path}")
     print(f"micro hash bits: {32 if int(args.micro_hash_bits) == 32 else 16}")
-    print(f"ask: puhl-luck --brain-dir {brain.brain_dir} ask \"your question\" --choices \"A,B\"")
+    print(f"ask: puhl-luck q \"your question\" \"A,B\"")
 
 
 def chat_help() -> str:
@@ -448,7 +488,8 @@ def cmd_chat(args) -> None:
 
 def cmd_start(args) -> None:
     brain = open_brain(args)
-    data_path = Path(args.data) if args.data else DEFAULT_DATA_DIR
+    data_value = args.data_path or args.data
+    data_path = Path(data_value) if data_value else DEFAULT_DATA_DIR
     if data_path.exists():
         learned = brain.learn_data_path(data_path, epochs=args.epochs, micro_hash_bits=args.micro_hash_bits)
         print(f"auto-trained: {learned} events from {data_path}")
@@ -461,7 +502,8 @@ def cmd_start(args) -> None:
 
 def cmd_ask(args) -> None:
     brain, ranker = open_brain_for_rank(args, explain=args.explain)
-    choices = [c.strip() for c in args.choices.split(",") if c.strip()] if args.choices else []
+    choices_value = args.choice_text or args.choices
+    choices = [c.strip() for c in choices_value.split(",") if c.strip()] if choices_value else []
     if not choices:
         choices = [c.strip() for c in input("choices comma-separated> ").split(",") if c.strip()]
     if not choices:
@@ -501,6 +543,9 @@ def _row_choices(row: dict[str, Any]) -> List[str]:
 
 
 def iter_ask_rows(path: Path, input_format: str = "jsonl") -> Iterable[dict[str, Any]]:
+    suffix = path.suffix.lower()
+    if input_format == "auto":
+        input_format = "tsv" if suffix == ".tsv" else "jsonl"
     if input_format == "tsv":
         with path.open("r", encoding="utf-8-sig", errors="ignore") as f:
             for line in f:
@@ -511,7 +556,6 @@ def iter_ask_rows(path: Path, input_format: str = "jsonl") -> Iterable[dict[str,
                 if len(parts) == 2:
                     yield {"question": parts[0], "choices": [c.strip() for c in parts[1].split(",") if c.strip()]}
         return
-    suffix = path.suffix.lower()
     if suffix == ".jsonl":
         with path.open("r", encoding="utf-8-sig", errors="ignore") as f:
             for line in f:
@@ -543,7 +587,10 @@ def iter_ask_rows(path: Path, input_format: str = "jsonl") -> Iterable[dict[str,
 
 def cmd_ask_batch(args) -> None:
     brain, ranker = open_brain_for_rank(args)
-    rows = iter_ask_rows(Path(args.input), args.format)
+    input_value = args.input_path or args.input
+    if not input_value:
+        raise SystemExit("ask-batch needs an input file, for example: puhl-luck b ask.tsv")
+    rows = iter_ask_rows(Path(input_value), args.format)
     out_f = None
     if args.output:
         out_path = Path(args.output)
@@ -707,12 +754,20 @@ def cmd_explain(args) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="puhl-luck", description="Train and chat with a local unified brain memory.")
-    parser.add_argument("--brain-dir", default=str(DEFAULT_BRAIN_DIR), help="folder that stores the learned brain file")
+    parser = argparse.ArgumentParser(
+        prog="puhl-luck",
+        description="Train, load, chat, and rank with a local unified brain memory.",
+        epilog=(
+            "short use: puhl-luck | puhl-luck brain_data | "
+            "puhl-luck brain_data\\brain_memory.pkl | puhl-luck \"question\" \"A,B\""
+        ),
+    )
+    parser.add_argument("--brain-dir", default=str(DEFAULT_BRAIN_DIR), help="learned brain folder")
     parser.add_argument("--window-size", type=int, default=12, help="event co-activation window")
     sub = parser.add_subparsers(dest="command")
 
-    start = sub.add_parser("start", help="auto-train data folder and open chat")
+    start = sub.add_parser("start", aliases=["s"], help="auto-train data folder and open chat")
+    start.add_argument("data_path", nargs="?", help="file or folder to auto-train before chat")
     start.add_argument("--data", help="file or folder to auto-train before chat; default is data")
     start.add_argument("--epochs", type=int, default=1, help="number of replay passes")
     start.add_argument("--micro-hash-bits", type=int, choices=[16, 32], default=16, help="micro rank feature hash width")
@@ -722,21 +777,23 @@ def build_parser() -> argparse.ArgumentParser:
     start.add_argument("--max-new-tokens", type=int, default=24)
     start.set_defaults(func=cmd_start)
 
-    train = sub.add_parser("train", aliases=["learn"], help="learn text, image, audio, and byte events")
+    train = sub.add_parser("train", aliases=["t", "learn"], help="learn text, image, audio, and byte events")
+    train.add_argument("data_path", nargs="?", help="file or folder with supported training data")
     train.add_argument("--data", help="file or folder with supported training data")
     train.add_argument("--epochs", type=int, default=1, help="number of replay passes")
     train.add_argument("--micro-hash-bits", type=int, choices=[16, 32], default=16, help="micro rank feature hash width")
     train.set_defaults(func=cmd_train)
 
-    chat = sub.add_parser("chat", help="open an interactive chat shell")
+    chat = sub.add_parser("chat", aliases=["c"], help="open an interactive chat shell")
     learn_group = chat.add_mutually_exclusive_group()
     learn_group.add_argument("--learn", dest="learn", action="store_true", default=True, help="learn from chat turns")
     learn_group.add_argument("--no-learn", dest="learn", action="store_false", help="do not learn from chat turns")
     chat.add_argument("--max-new-tokens", type=int, default=24)
     chat.set_defaults(func=cmd_chat)
 
-    ask = sub.add_parser("ask", help="rank choices using brain memory resonance")
+    ask = sub.add_parser("ask", aliases=["q"], help="rank choices using brain memory resonance")
     ask.add_argument("question")
+    ask.add_argument("choice_text", nargs="?", help="comma-separated choices")
     ask.add_argument("--choices", help="comma-separated choices")
     ask.add_argument("--mode", choices=sorted(ENERGY_MODES), default="event", help="energy scoring mode")
     ask.add_argument("--engine", choices=["auto", "micro", "full"], default="auto", help="inference engine")
@@ -744,8 +801,9 @@ def build_parser() -> argparse.ArgumentParser:
     ask.add_argument("--explain", action="store_true", help="print free-energy breakdown")
     ask.set_defaults(func=cmd_ask)
 
-    ask_batch = sub.add_parser("ask-batch", help="rank many questions after loading the brain once")
-    ask_batch.add_argument("--input", required=True, help=".jsonl, .json, or .csv with question and choices")
+    ask_batch = sub.add_parser("ask-batch", aliases=["batch", "b"], help="rank many questions after loading the brain once")
+    ask_batch.add_argument("input_path", nargs="?", help=".jsonl, .json, .csv, or .tsv with question and choices")
+    ask_batch.add_argument("--input", help=".jsonl, .json, .csv, or .tsv with question and choices")
     ask_batch.add_argument("--output", help="optional JSONL output path")
     ask_batch.add_argument("--format", choices=["auto", "jsonl", "tsv"], default="auto", help="input format")
     ask_batch.add_argument("--mode", choices=sorted(ENERGY_MODES), default="event", help="energy scoring mode")
@@ -799,7 +857,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[List[str]] = None) -> None:
     parser = build_parser()
-    args = parser.parse_args(argv)
+    normalized = normalize_default_argv(list(sys.argv[1:] if argv is None else argv))
+    args = parser.parse_args(normalized)
     if not hasattr(args, "func"):
         parser.print_help()
         return

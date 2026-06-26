@@ -6,6 +6,7 @@ import numpy as np
 
 from puhl_luck import BrainMemory, MicroRankModel
 from puhl_luck.brain_memory import bundle_hv, hv_similarity, text_feature_list, tokenize, write_varuint
+from puhl_luck.cli import brain_dir_from_load_path, normalize_default_argv
 
 
 def test_text_memory_learns_and_ranks():
@@ -19,6 +20,18 @@ def test_text_memory_learns_and_ranks():
     assert scores[1] > scores[0]
     assert mem.stats()["events"] == 2
     assert mem.stats()["features"] > 0
+
+
+def test_cli_defaults_to_chat_load_or_short_ask(tmp_path: Path):
+    brain_dir = tmp_path / "brain_data"
+    brain_dir.mkdir()
+    memory_path = brain_dir / "brain_memory.pkl"
+    memory_path.write_bytes(b"placeholder")
+
+    assert normalize_default_argv(["question", "A,B"]) == ["ask", "question", "A,B"]
+    assert normalize_default_argv(["t", "data"]) == ["t", "data"]
+    assert brain_dir_from_load_path(str(memory_path)) == brain_dir
+    assert normalize_default_argv([str(memory_path)]) == ["--brain-dir", str(brain_dir), "chat"]
 
 
 def test_memory_card_id_stays_as_anchor_token():

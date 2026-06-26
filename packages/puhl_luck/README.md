@@ -23,13 +23,13 @@ brain_data/
 Common commands:
 
 ```bat
-puhl-luck train --data data --epochs 1
-puhl-luck train --data data --micro-hash-bits 32
-puhl-luck start
-puhl-luck ask "question" --choices "A,B,C,D" --engine micro
-puhl-luck ask "question" --choices "A,B,C,D" --engine micro --device gpu
-puhl-luck ask-batch --input ask.tsv --format tsv --engine micro --quiet
-puhl-luck chat --no-learn
+puhl-luck
+puhl-luck brain_data
+puhl-luck t data
+puhl-luck s data
+puhl-luck c --no-learn
+puhl-luck q "question" "A,B,C,D"
+puhl-luck b ask.tsv --quiet
 puhl-luck recall "query text"
 puhl-luck status
 ```
