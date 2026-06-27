@@ -139,58 +139,186 @@ class MemoryTransitionMixin:
         # Get tokens from query
         query_tokens = simple_tokenize(query)
         
-        # ---- Step 2: Try exact input hash match first ----
-        candidates = storage.retrieve_by_input(query, top_k=10)
+        # ---- Step 2: Collect candidates with scores from all retrieval strategies ----
         
-        # ---- Step 3: Try INPUT feature retrieval (PRIMARY) ----
-        if not candidates and query_features:
+        # Map: sequence_id → {seq, scores by strategy}
+        candidate_scores: Dict[str, Dict[str, float]] = {}
+        
+        # Strategy 1: Exact input hash match (highest priority)
+        exact_matches = storage.retrieve_by_input(query, top_k=10)
+        for seq in exact_matches:
+            if seq.sequence_id not in candidate_scores:
+                candidate_scores[seq.sequence_id] = {"seq": seq}
+            candidate_scores[seq.sequence_id]["exact_hash"] = 1.0
+        
+        # Strategy 2: INPUT feature overlap (PRIMARY)
+        if query_features:
             feature_matches = storage.retrieve_by_input_features(
                 query_features=query_features,
-                top_k=10,
-                min_overlap=2,
+                top_k=15,
+                min_overlap=1,
             )
-            candidates = [seq for seq, score in feature_matches if score > 0.15]
+            for seq, score in feature_matches:
+                if seq.sequence_id not in candidate_scores:
+                    candidate_scores[seq.sequence_id] = {"seq": seq}
+                candidate_scores[seq.sequence_id]["feature_overlap"] = score
         
-        # ---- Step 4: Try INPUT token retrieval (SECONDARY) ----
-        if not candidates and query_tokens:
+        # Strategy 3: INPUT token overlap (SECONDARY)
+        if query_tokens:
             token_matches = storage.retrieve_by_input_tokens(
                 query_tokens=query_tokens,
-                top_k=10,
-                min_overlap=2,
+                top_k=15,
+                min_overlap=1,
             )
-            candidates = [seq for seq, score in token_matches if score > 0.2]
+            for seq, score in token_matches:
+                if seq.sequence_id not in candidate_scores:
+                    candidate_scores[seq.sequence_id] = {"seq": seq}
+                candidate_scores[seq.sequence_id]["token_overlap"] = score
         
-        # ---- Step 5: Try TARGET token overlap (AUXILIARY) ----
-        if not candidates and query_tokens:
+        # Strategy 4: TARGET token overlap (AUXILIARY)
+        if query_tokens:
             target_matches = storage.retrieve_by_target_tokens(
                 query_tokens=query_tokens,
                 top_k=10,
             )
-            candidates = [seq for seq, score in target_matches if score > 0.15]
+            for seq, score in target_matches:
+                if seq.sequence_id not in candidate_scores:
+                    candidate_scores[seq.sequence_id] = {"seq": seq}
+                candidate_scores[seq.sequence_id]["target_overlap"] = score * 0.5  # Lower weight
         
-        # ---- Step 6: No candidates found, use fallback ----
-        if not candidates:
+        # ---- Step 3: No candidates found, use fallback ----
+        if not candidate_scores:
             storage.retrieval_stats["empty"] += 1
             return self._generate_tokens_fallback(query, max_new_tokens)
         
-        # ---- Step 7: Score candidates and return best ----
+        # ---- Step 4: Compute final score for each candidate ----
         scored_candidates = []
         
-        for seq in candidates:
-            # Simple relevance score (can be improved with field energy)
-            score = 1.0 / (1.0 + seq.retrieval_count * 0.01)  # Prefer less-used (more specific)
-            scored_candidates.append((seq, score))
+        # Extract rare/identifier tokens from query for exact match bonus
+        rare_query_tokens = self._extract_rare_tokens(query_tokens)
         
-        # Sort by score
+        for seq_id, data in candidate_scores.items():
+            seq = data["seq"]
+            
+            # Base score: sum of retrieval strategy scores
+            base_score = (
+                data.get("exact_hash", 0.0) * 10.0 +          # Exact match = very strong
+                data.get("feature_overlap", 0.0) * 3.0 +      # Feature overlap = strong
+                data.get("token_overlap", 0.0) * 2.0 +        # Token overlap = moderate
+                data.get("target_overlap", 0.0) * 0.5         # Target overlap = weak
+            )
+            
+            # Bonus: exact identifier/rare token match in target raw_text
+            exact_match_bonus = self._compute_exact_token_bonus(
+                query_tokens=rare_query_tokens,
+                target_text=seq.raw_text,
+            )
+            
+            # Penalty: high retrieval_count = generic/overused sequence
+            generic_penalty = seq.retrieval_count * 0.01
+            
+            # Final score
+            final_score = base_score + exact_match_bonus - generic_penalty
+            
+            scored_candidates.append((seq, final_score))
+        
+        # Sort by final score
         scored_candidates.sort(key=lambda x: x[1], reverse=True)
         
-        # Return best sequence
-        best_seq = scored_candidates[0][0]
+        # ---- Step 5: Return best sequence ----
+        best_seq, best_score = scored_candidates[0]
         storage.mark_retrieved(best_seq.sequence_id)
         
         return best_seq.raw_text
     
-    def _generate_tokens_fallback(self, query: str, max_tokens: int) -> str:
+    def _extract_rare_tokens(self, tokens: List[str]) -> List[str]:
+        """
+        Extract rare/identifier-like tokens from query.
+        
+        These are likely function names, labels, or specific identifiers
+        that should have strong exact-match bonuses.
+        
+        Rare tokens:
+        - Not common words (not in top 1000 most common)
+        - Length >= 3
+        - Contains letters (not just symbols)
+        """
+        if not tokens:
+            return []
+        
+        # Common words to exclude (approximate top 1000)
+        common_words = {
+            "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+            "have", "has", "had", "do", "does", "did", "will", "would", "should",
+            "can", "could", "may", "might", "must", "shall", "to", "of", "in",
+            "for", "on", "at", "by", "from", "with", "as", "this", "that", "these",
+            "those", "it", "its", "they", "them", "their", "we", "our", "you", "your",
+            "def", "class", "return", "if", "else", "while", "for", "in", "and", "or",
+            "not", "is", "true", "false", "none", "null", "self", "import", "from",
+        }
+        
+        rare_tokens = []
+        for token in tokens:
+            token_lower = token.lower()
+            
+            # Skip common words
+            if token_lower in common_words:
+                continue
+            
+            # Skip very short tokens
+            if len(token) < 3:
+                continue
+            
+            # Skip pure symbols
+            if not any(c.isalpha() for c in token):
+                continue
+            
+            # Skip very common programming tokens
+            if token_lower in ["get", "set", "add", "new", "old", "val", "num", "str"]:
+                continue
+            
+            rare_tokens.append(token)
+        
+        return rare_tokens
+    
+    def _compute_exact_token_bonus(
+        self,
+        query_tokens: List[str],
+        target_text: str,
+    ) -> float:
+        """
+        Compute bonus for exact rare token matches between query and target.
+        
+        Strong signal: if query contains "two_unique_nums" and target contains
+        "two_unique_nums", this is likely the right match.
+        
+        Args:
+            query_tokens: Rare/identifier tokens from query
+            target_text: Raw text of candidate surface sequence
+            
+        Returns:
+            Bonus score (0.0 to 5.0+)
+        """
+        if not query_tokens:
+            return 0.0
+        
+        target_lower = target_text.lower()
+        bonus = 0.0
+        
+        for token in query_tokens:
+            token_lower = token.lower()
+            
+            # Exact match in target
+            if token_lower in target_lower:
+                # Longer tokens = stronger signal
+                if len(token) >= 10:
+                    bonus += 2.0  # Very rare, likely function/class name
+                elif len(token) >= 6:
+                    bonus += 1.5  # Moderately rare
+                else:
+                    bonus += 1.0  # Somewhat rare
+        
+        return bonus
         """
         Token-by-token generation fallback with progressive context backoff.
         

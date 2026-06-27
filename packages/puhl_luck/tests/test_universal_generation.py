@@ -161,6 +161,69 @@ def test_retrieval_statistics():
     assert total_retrievals > 0, "Should have tracked some retrievals"
 
 
+def test_exact_token_match_bonus():
+    """Test that rare token exact matches get priority."""
+    brain = BrainMemory()
+    
+    # Train multiple functions
+    brain.expose_pair(
+        "def two_unique_nums(nums):",
+        "return len(set(nums)) == 2",
+        domain="code"
+    )
+    brain.expose_pair(
+        "def triangle_area(a, b, c):",
+        "s = (a+b+c)/2; return (s*(s-a)*(s-b)*(s-c))**0.5",
+        domain="code"
+    )
+    brain.expose_pair(
+        "def remove_char(s, c):",
+        "return s.replace(c, '')",
+        domain="code"
+    )
+    
+    # Query with specific function name token
+    result = brain.generate("def two_unique_nums(arr):")
+    
+    print(f"Query: def two_unique_nums(arr):")
+    print(f"Result: {result}")
+    
+    # Should retrieve the two_unique_nums implementation, not triangle_area or remove_char
+    assert "set" in result.lower() or "unique" in result.lower(), \
+        f"Should retrieve two_unique_nums implementation, got: {result}"
+
+
+def test_scoring_preserves_overlap():
+    """Test that overlap scores are preserved and used in final ranking."""
+    brain = BrainMemory()
+    
+    # Train with different feature overlaps
+    brain.expose_pair(
+        "classify news about politics",
+        "정치",
+        domain="classification"
+    )
+    brain.expose_pair(
+        "classify news about technology innovation",
+        "IT과학",
+        domain="classification"
+    )
+    brain.expose_pair(
+        "classify article about sports events",
+        "스포츠",
+        domain="classification"
+    )
+    
+    # Query with high overlap to IT/technology
+    result = brain.generate("classify news about technology")
+    
+    print(f"Query: classify news about technology")
+    print(f"Result: {result}")
+    
+    # Should prefer IT과학 (has "technology" overlap) over 정치 or 스포츠
+    assert result == "IT과학", f"Should prefer technology-related class, got: {result}"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-xvs"])
 
