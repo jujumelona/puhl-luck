@@ -12,4 +12,10 @@ class MemoryGenerationMixin(
     MemoryOrderDecodeMixin,
     MemoryFragmentsMixin,
 ):
+    """Mixin that assembles all generation sub-mixins.
+
+    ``generate()`` is provided by MemoryTransitionMixin (wired via BrainMemory).
+    The classic ``answer()`` path lives in MemoryAnsweringMixin and serves as
+    the fallback inside generate().
+    """
     pass

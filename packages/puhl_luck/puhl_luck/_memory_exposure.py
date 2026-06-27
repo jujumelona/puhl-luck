@@ -90,11 +90,22 @@ class MemoryExposureMixin:
             else:
                 target_tokens = simple_tokenize(target_text)
             
-            # Store: input → target sequence
+            # Tokenize INPUT for indexing
+            try:
+                if domain == "code":
+                    input_tokens = tokenize_code(partial)
+                else:
+                    input_tokens = simple_tokenize(partial)
+            except Exception:
+                input_tokens = partial.split()
+            
+            # Store: input features/tokens → target sequence
             surface_storage.store_sequence(
                 raw_text=target_text,
                 tokens=target_tokens,
                 source_input=partial,
+                input_features=p_features,  # INPUT features for retrieval
+                input_tokens=input_tokens,  # INPUT tokens for retrieval
             )
 
         # 3. Build StateField representations for transition learning

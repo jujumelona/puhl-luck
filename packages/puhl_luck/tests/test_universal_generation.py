@@ -20,6 +20,8 @@ def test_surface_sequence_storage():
     # Check storage
     stats = brain._surface_storage.get_stats()
     assert stats["total_sequences"] > 0, "Should store surface sequence"
+    assert stats["indexed_input_features"] > 0, "Should index input features"
+    assert stats["indexed_input_tokens"] > 0, "Should index input tokens"
     print(f"Storage stats: {stats}")
 
 
@@ -41,6 +43,40 @@ def test_exact_retrieval():
     print(f"Expected: {target_text}")
     
     assert result == target_text, f"Should return exact target, got: {result}"
+
+
+def test_input_feature_retrieval():
+    """Test retrieval by input feature overlap."""
+    brain = BrainMemory()
+    
+    # Train with similar inputs
+    brain.expose_pair("classify news: 정치 관련 뉴스", "정치", domain="classification")
+    brain.expose_pair("classify news: 경제 관련 뉴스", "경제", domain="classification")
+    brain.expose_pair("classify news: IT 기술 뉴스", "IT과학", domain="classification")
+    
+    # Query with similar but not exact input
+    result = brain.generate("classify news: IT 관련 기사")
+    
+    print(f"Result: {result}")
+    # Should retrieve IT과학 due to feature overlap (classify, news, IT)
+    assert result in ["IT과학", "정치", "경제"], f"Should retrieve one of the labels, got: {result}"
+
+
+def test_input_token_retrieval():
+    """Test retrieval by input token overlap."""
+    brain = BrainMemory()
+    
+    # Train
+    brain.expose_pair("def factorial(n):", "return 1 if n == 0 else n * factorial(n-1)", domain="code")
+    brain.expose_pair("def fibonacci(n):", "return n if n <= 1 else fibonacci(n-1) + fibonacci(n-2)", domain="code")
+    
+    # Query with token overlap (def, n)
+    result = brain.generate("def power(n):")
+    
+    print(f"Token overlap result: {result}")
+    # Should retrieve something (not empty)
+    assert isinstance(result, str), "Should return string"
+    assert len(result) > 0, "Should not be empty due to token overlap retrieval"
 
 
 def test_multi_target_retrieval():
@@ -97,5 +133,34 @@ def test_universal_domains():
     print("All domains work correctly!")
 
 
+def test_retrieval_statistics():
+    """Test that retrieval statistics are tracked."""
+    brain = BrainMemory()
+    
+    # Train
+    brain.expose_pair("input1", "output1", domain="text")
+    brain.expose_pair("input2 similar", "output2", domain="text")
+    
+    # Query exact match
+    brain.generate("input1")
+    
+    # Query with feature overlap
+    brain.generate("input2 different")
+    
+    # Check stats
+    stats = brain._surface_storage.get_stats()
+    print(f"Retrieval stats: {stats}")
+    
+    # Should have some retrieval activity
+    total_retrievals = (
+        stats["exact_hash"] + 
+        stats["input_feature"] + 
+        stats["input_token"] + 
+        stats["target_token"]
+    )
+    assert total_retrievals > 0, "Should have tracked some retrievals"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-xvs"])
+

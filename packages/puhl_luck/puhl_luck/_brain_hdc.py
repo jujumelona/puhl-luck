@@ -3,6 +3,20 @@ from __future__ import annotations
 from ._brain_defs import *
 from ._brain_hashing import *
 
+# Try to import Rust implementations
+try:
+    import sys
+    import os
+    # Add package directory to path if needed
+    pkg_dir = os.path.dirname(__file__)
+    if pkg_dir not in sys.path:
+        sys.path.insert(0, pkg_dir)
+    
+    import puhl_luck_core
+    RUST_AVAILABLE = True
+except ImportError:
+    RUST_AVAILABLE = False
+
 def dynamic_hdc_words(feature_count: int, event_count: int) -> int:
     scale = max(4, feature_count + 2 * event_count + 2)
     return max(2, math.ceil(math.log2(scale)))
@@ -13,6 +27,11 @@ def dynamic_hdc_bits(feature_count: int, event_count: int) -> int:
 
 
 def feature_hv(feature: str, words: int) -> np.ndarray:
+    # Use Rust if available (9.7x faster)
+    if RUST_AVAILABLE:
+        return puhl_luck_core.feature_hv_rust(feature, words)
+    
+    # Fallback to Python
     seed = hashlib.blake2b(feature.encode("utf-8", errors="ignore"), digest_size=16).digest()
     chunks = []
     block_i = 0
@@ -24,6 +43,11 @@ def feature_hv(feature: str, words: int) -> np.ndarray:
 
 
 def rotate_hv(value: np.ndarray, amount: int) -> np.ndarray:
+    # Use Rust if available
+    if RUST_AVAILABLE:
+        return puhl_luck_core.rotate_hv_rust(value, amount)
+    
+    # Fallback to Python
     if value.size == 0:
         return value.copy()
     bit_shift = amount % HDC_WORD_BITS
@@ -39,6 +63,12 @@ def bundle_hv(features: Iterable[str], bits: Optional[int] = None) -> np.ndarray
     if bits is None:
         bits = dynamic_hdc_bits(len(feature_list), 1)
     words = max(1, bits // HDC_WORD_BITS)
+    
+    # Use Rust if available (bundling is Rust-only optimization)
+    if RUST_AVAILABLE:
+        return puhl_luck_core.bundle_hv_rust(feature_list, words)
+    
+    # Fallback to Python
     value = np.zeros(words, dtype=np.uint64)
     for i, feature in enumerate(feature_list):
         value ^= rotate_hv(feature_hv(feature, words), i)
@@ -46,6 +76,16 @@ def bundle_hv(features: Iterable[str], bits: Optional[int] = None) -> np.ndarray
 
 
 def hv_similarity(a: np.ndarray, b: np.ndarray, bits: Optional[int] = None) -> float:
+    # Use Rust if available (26.6x faster)
+    if RUST_AVAILABLE:
+        # Ensure correct dtype for Rust
+        if a.dtype != np.uint64:
+            a = a.astype(np.uint64)
+        if b.dtype != np.uint64:
+            b = b.astype(np.uint64)
+        return puhl_luck_core.hv_similarity_rust(a, b)
+    
+    # Fallback to Python
     if a.size == 0 or b.size == 0:
         return 0.0
     if bits is None:

@@ -99,13 +99,16 @@ class MemoryTransitionMixin:
         use_surface_storage: bool = True,
     ) -> str:
         """
-        UNIVERSAL surface sequence generation.
+        UNIVERSAL surface sequence generation with improved input→surface retrieval.
         
-        Pipeline:
-        1. Retrieve stored surface sequences matching query
-        2. Score sequences by relevance + coherence
-        3. Return best sequence raw text
-        4. Fallback to token generation if no stored sequences
+        Pipeline (in order of priority):
+        1. Extract query features + tokens
+        2. Retrieve by INPUT features (primary)
+        3. Retrieve by INPUT tokens (secondary)
+        4. Retrieve by TARGET tokens (auxiliary)
+        5. Score candidates by relevance
+        6. Return best raw_text
+        7. Fallback to token generation if no candidates
         
         Works for ALL tasks:
         - Code: query="def add(a,b):" → "return a+b"
@@ -125,24 +128,52 @@ class MemoryTransitionMixin:
             # Fallback to old generation
             return self.answer(query, max_new_tokens=max_new_tokens)
         
-        # ---- Step 1: Retrieve stored surface sequences ----
         storage = self._surface_storage
         
-        # Try exact input match first
+        # ---- Step 1: Extract query features and tokens ----
+        from ._memory_tokenization import simple_tokenize
+        
+        # Get features from query
+        query_features = self.features_for_query(query)
+        
+        # Get tokens from query
+        query_tokens = simple_tokenize(query)
+        
+        # ---- Step 2: Try exact input hash match first ----
         candidates = storage.retrieve_by_input(query, top_k=10)
         
-        # If no exact match, try token overlap
-        if not candidates:
-            from ._memory_tokenization import simple_tokenize
-            query_tokens = simple_tokenize(query)
-            token_matches = storage.retrieve_by_tokens(query_tokens, top_k=10)
-            candidates = [seq for seq, score in token_matches if score > 0.1]
+        # ---- Step 3: Try INPUT feature retrieval (PRIMARY) ----
+        if not candidates and query_features:
+            feature_matches = storage.retrieve_by_input_features(
+                query_features=query_features,
+                top_k=10,
+                min_overlap=2,
+            )
+            candidates = [seq for seq, score in feature_matches if score > 0.15]
         
-        # ---- Step 2: No stored sequences, use token generation ----
+        # ---- Step 4: Try INPUT token retrieval (SECONDARY) ----
+        if not candidates and query_tokens:
+            token_matches = storage.retrieve_by_input_tokens(
+                query_tokens=query_tokens,
+                top_k=10,
+                min_overlap=2,
+            )
+            candidates = [seq for seq, score in token_matches if score > 0.2]
+        
+        # ---- Step 5: Try TARGET token overlap (AUXILIARY) ----
+        if not candidates and query_tokens:
+            target_matches = storage.retrieve_by_target_tokens(
+                query_tokens=query_tokens,
+                top_k=10,
+            )
+            candidates = [seq for seq, score in target_matches if score > 0.15]
+        
+        # ---- Step 6: No candidates found, use fallback ----
         if not candidates:
+            storage.retrieval_stats["empty"] += 1
             return self._generate_tokens_fallback(query, max_new_tokens)
         
-        # ---- Step 3: Score candidates ----
+        # ---- Step 7: Score candidates and return best ----
         scored_candidates = []
         
         for seq in candidates:
@@ -153,7 +184,7 @@ class MemoryTransitionMixin:
         # Sort by score
         scored_candidates.sort(key=lambda x: x[1], reverse=True)
         
-        # ---- Step 4: Return best sequence ----
+        # Return best sequence
         best_seq = scored_candidates[0][0]
         storage.mark_retrieved(best_seq.sequence_id)
         
@@ -161,41 +192,134 @@ class MemoryTransitionMixin:
     
     def _generate_tokens_fallback(self, query: str, max_tokens: int) -> str:
         """
-        Token-by-token generation fallback when no stored sequences match.
+        Token-by-token generation fallback with progressive context backoff.
         
-        Uses token transition patterns.
+        Strategy (in order):
+        1. Full query context exact match
+        2. Last-k token context match (k=10, 5, 3)
+        3. Token overlap with stored transitions
+        4. Operator/transition candidate selection
+        
+        This reduces empty output by trying multiple context strategies.
         """
         from ._memory_tokenization import simple_tokenize
+        
+        storage = getattr(self, "_surface_storage", None)
+        if storage:
+            storage.retrieval_stats["fallback"] += 1
         
         # Tokenize query
         context_tokens = simple_tokenize(query)
         generated_tokens = []
         
-        for _ in range(max_tokens):
-            # Find next token candidates
-            candidates = self._transition_layer.find_next_token(
-                context_tokens=context_tokens + generated_tokens,
-                top_k=5,
-            )
+        for step in range(max_tokens):
+            full_context = context_tokens + generated_tokens
             
-            if not candidates:
+            # Strategy 1: Full context exact match
+            next_token = self._find_next_token_exact(full_context)
+            
+            # Strategy 2: Last-k token context (progressive backoff)
+            if not next_token:
+                for k in [10, 5, 3]:
+                    next_token = self._find_next_token_last_k(full_context, k)
+                    if next_token:
+                        break
+            
+            # Strategy 3: Token overlap with transitions
+            if not next_token:
+                next_token = self._find_next_token_overlap(full_context)
+            
+            # Strategy 4: Operator/transition candidate
+            if not next_token:
+                next_token = self._find_next_token_operator(full_context)
+            
+            # No candidates found, stop
+            if not next_token:
                 break
-            
-            # Select best
-            next_token, score = candidates[0]
             
             # Stop conditions
             if next_token in ("<END>", "<EOS>", "<|endoftext|>"):
                 break
             
-            # Check repetition
+            # Check repetition (same token 3+ times)
             if len(generated_tokens) >= 3 and generated_tokens[-3:] == [next_token] * 3:
                 break
             
             generated_tokens.append(next_token)
         
         # Detokenize
-        return " ".join(generated_tokens)
+        result = " ".join(generated_tokens)
+        
+        # If still empty, try to retrieve ANY stored sequence as last resort
+        if not result.strip() and storage:
+            all_seqs = storage.retrieve_all(top_k=5)
+            if all_seqs:
+                # Return most common sequence
+                return all_seqs[0].raw_text
+        
+        return result
+    
+    def _find_next_token_exact(self, context_tokens: List[str]) -> Optional[str]:
+        """Find next token using exact full context match."""
+        candidates = self._transition_layer.find_next_token(
+            context_tokens=context_tokens,
+            top_k=1,
+        )
+        return candidates[0][0] if candidates else None
+    
+    def _find_next_token_last_k(self, context_tokens: List[str], k: int) -> Optional[str]:
+        """Find next token using last-k context only."""
+        if len(context_tokens) < k:
+            return None
+        
+        last_k_context = context_tokens[-k:]
+        candidates = self._transition_layer.find_next_token(
+            context_tokens=last_k_context,
+            top_k=1,
+        )
+        return candidates[0][0] if candidates else None
+    
+    def _find_next_token_overlap(self, context_tokens: List[str]) -> Optional[str]:
+        """Find next token by partial overlap with stored transitions."""
+        if not context_tokens:
+            return None
+        
+        # Try different overlap sizes
+        for overlap_size in [5, 3, 2]:
+            if len(context_tokens) < overlap_size:
+                continue
+            
+            suffix = context_tokens[-overlap_size:]
+            candidates = self._transition_layer.find_next_token(
+                context_tokens=suffix,
+                top_k=3,
+            )
+            
+            if candidates:
+                # Return highest scoring candidate
+                return candidates[0][0]
+        
+        return None
+    
+    def _find_next_token_operator(self, context_tokens: List[str]) -> Optional[str]:
+        """Find next token using operator/transition patterns."""
+        # Simple heuristic: use most common continuation from unigrams
+        if not context_tokens:
+            return None
+        
+        last_token = context_tokens[-1] if context_tokens else None
+        if not last_token:
+            return None
+        
+        # Look up in token successors (from learn_order_trace)
+        successors = getattr(self, "token_successors", {})
+        if last_token in successors:
+            successor_counts = successors[last_token]
+            if successor_counts:
+                # Return most common successor
+                return successor_counts.most_common(1)[0][0]
+        
+        return None
 
     # ------------------------------------------------------------------
     # Token-level generation (LLM-style, pattern-based)
