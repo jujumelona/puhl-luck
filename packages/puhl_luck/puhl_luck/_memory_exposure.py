@@ -43,40 +43,65 @@ class MemoryExposureMixin:
         domain: str = "conversation",
         modality: str = "text",
     ) -> Tuple[str, str]:
-        """Primary method for transition learning.
-
-        Stores a (partial context → continuation → completed state) triple.
-        The *partial* is what we observed first (incomplete state).
-        The *continuation* is an optional intermediate step.
-        The *complete* is the final resolved state.
-
-        Examples
-        --------
-        Question fragment → answer fragment → full Q&A:
-            brain.expose_pair("what is HDC?", "HDC 는 초고차원 벡터를 이용한 ...메모리다.", domain="conversation")
-
-        Incomplete code → next line → runnable code:
-            brain.expose_pair("def foo(x):", "    return x * 2", "def foo(x):\n    return x * 2", domain="code")
-
-        Partial explanation → next step → full explanation:
-            brain.expose_pair("먼저 활성화 에너지를", "측정하고 그 다음 결과를 비교한다.", domain="reasoning")
         """
-        # 1. Store both sides as exposure events
+        PRIMARY method for learning input→target pairs.
+        
+        **Universal storage strategy:**
+        1. Learn input state (features, transitions, operators)
+        2. Store target as raw surface sequence  
+        3. Link input → target for retrieval
+        4. Learn token transitions for generation
+
+        This works for ALL tasks:
+        - Code: partial="def add(a,b):", complete="def add(a,b): return a+b"
+        - Classification: partial="뉴스 text...", complete="IT과학"
+        - QA: partial="질문...", complete="정답 span"
+        - Generation: partial="prompt...", complete="full answer"
+
+        Args:
+            partial: Input text (question, prompt, incomplete code, etc.)
+            complete: Target output text (answer, label, complete code, etc.)
+            continuation: Optional intermediate step
+            domain: conversation, code, classification, qa, etc.
+            modality: text, code, label
+        
+        Returns:
+            (partial_event_id, complete_event_id)
+        """
+        # 1. Store both sides as exposure events (for feature learning)
         p_features, p_seq, p_preview = self.extract_text(partial)
         c_features, c_seq, c_preview = self.extract_text(complete)
 
         partial_id = self.expose_event("text", p_features, p_seq, source=source, label=label, preview=p_preview)
         complete_id = self.expose_event("text", c_features, c_seq, source=source, label=label, preview=c_preview)
 
-        if continuation:
-            cont_features, cont_seq, cont_preview = self.extract_text(continuation)
-            self.expose_event("text", cont_features, cont_seq, source=source, preview=cont_preview)
+        # 2. Store target as UNIVERSAL surface sequence
+        target_text = continuation if continuation else complete
+        surface_storage = getattr(self, "_surface_storage", None)
+        if surface_storage is not None:
+            # Tokenize target for storage
+            from ._memory_tokenization import tokenize_code, simple_tokenize
+            
+            if domain == "code":
+                try:
+                    target_tokens = tokenize_code(target_text)
+                except Exception:
+                    target_tokens = simple_tokenize(target_text)
+            else:
+                target_tokens = simple_tokenize(target_text)
+            
+            # Store: input → target sequence
+            surface_storage.store_sequence(
+                raw_text=target_text,
+                tokens=target_tokens,
+                source_input=partial,
+            )
 
-        # 2. Build StateField representations for transition storage
+        # 3. Build StateField representations for transition learning
         partial_field = self._features_to_state_field(p_features, p_seq)
         complete_field = self._features_to_state_field(c_features, c_seq)
 
-        # 3. Store the transition in the TransitionMemoryLayer
+        # 4. Store state transition (for field-based reasoning)
         transition_layer = getattr(self, "_transition_layer", None)
         if transition_layer is not None:
             transition_layer.store_transition(
@@ -87,24 +112,9 @@ class MemoryExposureMixin:
             )
             self._pending_induction_count = getattr(self, "_pending_induction_count", 0) + 1
 
-        # 4. Learn the actual surface answer for this partial state.
-        # This is the missing bridge from internal transition memory to real output.
-        surface_layer = getattr(self, "_surface_layer", None)
-        if surface_layer is not None:
-            state_pattern = "|".join(sorted(p_features[:10]))
-            surface_text = (continuation or complete).strip()
-            surface_features = cont_features if continuation else c_features
-            surface_layer.learn_surface_form(
-                state_pattern=state_pattern,
-                surface_text=surface_text,
-                modality=modality,
-                features=surface_features,
-            )
-
-        # 5. TOKEN-LEVEL LEARNING for code domain
-        # Split complete answer into tokens and store token transitions
-        if domain == "code" and transition_layer is not None:
-            self._store_token_level_transitions(partial, complete, continuation, transition_layer)
+        # 5. Store token transitions (for token-by-token generation)
+        if transition_layer is not None:
+            self._store_token_transitions_universal(partial, target_text, transition_layer)
 
         # 6. Periodically induce operators from accumulated transitions
         self._maybe_induce_operators()
@@ -227,51 +237,41 @@ class MemoryExposureMixin:
 
         self._pending_induction_count = 0
 
-    def _store_token_level_transitions(
+    def _store_token_transitions_universal(
         self,
-        partial: str,
-        complete: str,
-        continuation: Optional[str],
+        input_text: str,
+        target_text: str,
         transition_layer,
     ) -> None:
         """
-        Store token-level transitions for code generation.
+        Store token transitions for ANY target (not just code).
         
-        KEY: Store only the NEW tokens (answer part), not the entire complete text.
+        This enables token-by-token generation for all domains:
+        - Code completion
+        - Text generation
+        - Label prediction (as sequence of chars)
         """
-        from ._memory_tokenization import tokenize_code
+        from ._memory_tokenization import tokenize_code, simple_tokenize
         
-        # Determine what's NEW (the answer/continuation)
-        if continuation:
-            # Explicit continuation provided
-            answer_text = continuation
-        else:
-            # Extract answer from complete by removing partial prefix
-            # Simple heuristic: if complete starts with partial, take remainder
-            if complete.startswith(partial):
-                answer_text = complete[len(partial):].lstrip()
-            else:
-                # Fallback: use complete as-is
-                answer_text = complete
-        
-        # Tokenize
+        # Tokenize input and target
+        # Use simple tokenizer for non-code
         try:
-            partial_tokens = tokenize_code(partial)
-            answer_tokens = tokenize_code(answer_text)
+            input_tokens = simple_tokenize(input_text)
+            target_tokens = simple_tokenize(target_text)
         except Exception:
-            partial_tokens = partial.split()
-            answer_tokens = answer_text.split()
+            input_tokens = input_text.split()
+            target_tokens = target_text.split()
         
-        # Store: partial + answer[:i] → answer[i]
-        for i in range(len(answer_tokens)):
-            context = partial_tokens + answer_tokens[:i]
-            next_token = answer_tokens[i]
+        # Store: input_tokens + target[:i] → target[i]
+        for i in range(len(target_tokens)):
+            context = input_tokens + target_tokens[:i]
+            next_token = target_tokens[i]
             
             transition_layer.store_token_transition(
                 context_tokens=context,
                 next_token=next_token,
-                modality="code",
-                domain="code",
+                modality="text",
+                domain="universal",
             )
 
     def expose_file(self, path: str | Path, label: Optional[str] = None) -> str:

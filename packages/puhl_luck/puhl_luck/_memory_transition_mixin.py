@@ -55,6 +55,10 @@ def _get_field_energy():
     from ._memory_field_energy import FreeEnergyMinimization
     return FreeEnergyMinimization
 
+def _get_surface_storage():
+    from ._memory_surface_storage import SurfaceSequenceStorage
+    return SurfaceSequenceStorage
+
 
 class MemoryTransitionMixin:
     """
@@ -76,6 +80,7 @@ class MemoryTransitionMixin:
         self._operator_layer = _get_operator_layer()()
         self._operator_induction = _get_operator_induction()()
         self._surface_layer = _get_surface_layer()()
+        self._surface_storage = _get_surface_storage()()  # NEW: Universal surface storage
         self._energy_computer = _get_field_energy()()
         self._candidate_emergence = _get_candidate_emergence()(
             energy_computer=self._energy_computer,
@@ -84,75 +89,113 @@ class MemoryTransitionMixin:
         self._pending_induction_count: int = 0
 
     # ------------------------------------------------------------------
-    # generate() — full pipeline
+    # generate() — UNIVERSAL surface sequence generation
     # ------------------------------------------------------------------
 
     def generate(
         self,
-        prompt: str,
+        query: str,
         max_new_tokens: int = 64,
-        use_field_pipeline: bool = True,
+        use_surface_storage: bool = True,
     ) -> str:
-        """Generate a response using the full 9-layer field pipeline.
-
-        Pipeline
-        --------
-        1. Form cognitive field from prompt (activate memories)
-        2. CandidateEmergence — generate tension-reducing candidates
-        3. Score candidates (free-energy field scoring)
-        4. Select SINGLE best candidate (NOT multiple iterations)
-        5. SurfaceRealization — convert candidate state → surface string
-        6. Return coherent answer (NOT piecemeal append)
-
-        Returns the generated surface string.
         """
-        if not use_field_pipeline or not getattr(self, "_candidate_emergence", None):
-            return self.answer(prompt, max_new_tokens=max_new_tokens)
-
-        # ---- Step 1: form cognitive field from prompt ----
-        field = self._form_field_from_prompt(prompt)
-
-        # ---- Step 2: candidate emergence ----
-        candidates = self._candidate_emergence.generate_candidates(
-            field=field,
-            operators_layer=self._operator_layer,
-            transitions_layer=self._transition_layer,
-            num_candidates=10,
-        )
-
-        # ---- Step 3+4: select SINGLE best candidate ----
-        if not candidates:
-            # No candidates, fall back
-            return self.answer(prompt, max_new_tokens=max_new_tokens)
+        UNIVERSAL surface sequence generation.
         
-        # Candidates already sorted by energy_reduction desc
-        best_candidate = candidates[0]
-
-        # ---- Step 5: surface realization ----
-        surface_form = self._surface_layer.realize(
-            candidate=best_candidate,
-            state_field=field,
-            modality="text",
-            max_alternatives=3,
-        )
-        surface_text = surface_form.text.strip()
-
-        # ---- Step 6: fallback if empty or garbage ----
-        if not surface_text or self._is_garbage_output(surface_text):
-            return self.answer(prompt, max_new_tokens=max_new_tokens)
-
-        # Learn the transition: prompt (partial) → surface_text (complete)
-        try:
-            self.expose_pair(
-                partial=prompt,
-                complete=surface_text,
-                source="generate",
-                domain="conversation",
+        Pipeline:
+        1. Retrieve stored surface sequences matching query
+        2. Score sequences by relevance + coherence
+        3. Return best sequence raw text
+        4. Fallback to token generation if no stored sequences
+        
+        Works for ALL tasks:
+        - Code: query="def add(a,b):" → "return a+b"
+        - Classification: query="뉴스 text..." → "IT과학"
+        - QA: query="질문..." → "정답 span"
+        - Generation: query="prompt..." → "full answer"
+        
+        Args:
+            query: Input query/prompt
+            max_new_tokens: Max tokens to generate (for fallback)
+            use_surface_storage: Whether to use stored sequences (default: True)
+            
+        Returns:
+            Raw surface text (ready to output)
+        """
+        if not use_surface_storage or not hasattr(self, "_surface_storage"):
+            # Fallback to old generation
+            return self.answer(query, max_new_tokens=max_new_tokens)
+        
+        # ---- Step 1: Retrieve stored surface sequences ----
+        storage = self._surface_storage
+        
+        # Try exact input match first
+        candidates = storage.retrieve_by_input(query, top_k=10)
+        
+        # If no exact match, try token overlap
+        if not candidates:
+            from ._memory_tokenization import simple_tokenize
+            query_tokens = simple_tokenize(query)
+            token_matches = storage.retrieve_by_tokens(query_tokens, top_k=10)
+            candidates = [seq for seq, score in token_matches if score > 0.1]
+        
+        # ---- Step 2: No stored sequences, use token generation ----
+        if not candidates:
+            return self._generate_tokens_fallback(query, max_new_tokens)
+        
+        # ---- Step 3: Score candidates ----
+        scored_candidates = []
+        
+        for seq in candidates:
+            # Simple relevance score (can be improved with field energy)
+            score = 1.0 / (1.0 + seq.retrieval_count * 0.01)  # Prefer less-used (more specific)
+            scored_candidates.append((seq, score))
+        
+        # Sort by score
+        scored_candidates.sort(key=lambda x: x[1], reverse=True)
+        
+        # ---- Step 4: Return best sequence ----
+        best_seq = scored_candidates[0][0]
+        storage.mark_retrieved(best_seq.sequence_id)
+        
+        return best_seq.raw_text
+    
+    def _generate_tokens_fallback(self, query: str, max_tokens: int) -> str:
+        """
+        Token-by-token generation fallback when no stored sequences match.
+        
+        Uses token transition patterns.
+        """
+        from ._memory_tokenization import simple_tokenize
+        
+        # Tokenize query
+        context_tokens = simple_tokenize(query)
+        generated_tokens = []
+        
+        for _ in range(max_tokens):
+            # Find next token candidates
+            candidates = self._transition_layer.find_next_token(
+                context_tokens=context_tokens + generated_tokens,
+                top_k=5,
             )
-        except Exception:
-            pass
-
-        return surface_text
+            
+            if not candidates:
+                break
+            
+            # Select best
+            next_token, score = candidates[0]
+            
+            # Stop conditions
+            if next_token in ("<END>", "<EOS>", "<|endoftext|>"):
+                break
+            
+            # Check repetition
+            if len(generated_tokens) >= 3 and generated_tokens[-3:] == [next_token] * 3:
+                break
+            
+            generated_tokens.append(next_token)
+        
+        # Detokenize
+        return " ".join(generated_tokens)
 
     # ------------------------------------------------------------------
     # Token-level generation (LLM-style, pattern-based)

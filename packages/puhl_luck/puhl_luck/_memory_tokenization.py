@@ -86,37 +86,109 @@ def detokenize_code(tokens: List[str]) -> str:
     Returns:
         Reconstructed code string
     """
-    lines = []
-    current_line = []
-    indent_level = 0
+    if not tokens:
+        return ""
     
-    for token in tokens:
+    result = []
+    i = 0
+    
+    while i < len(tokens):
+        token = tokens[i]
+        
+        # Handle structural tokens
         if token == "<NEWLINE>":
-            # Finish current line
-            lines.append("".join(current_line))
-            current_line = []
+            result.append("\n")
+            i += 1
+            continue
         elif token == "<INDENT>":
-            indent_level += 1
+            # Add indentation at start of next line
+            if result and result[-1] == "\n":
+                result.append("    ")
+            i += 1
+            continue
         elif token == "<DEDENT>":
-            indent_level = max(0, indent_level - 1)
+            # Just mark - actual dedent handled by newline
+            i += 1
+            continue
+        
+        # Fix common operator splits
+        # == != <= >= << >> += -= *= /= //=
+        if i + 1 < len(tokens):
+            next_token = tokens[i + 1]
+            
+            # Two-char operators
+            if token == "=" and next_token == "=":
+                result.append("==")
+                i += 2
+                continue
+            elif token == "!" and next_token == "=":
+                result.append("!=")
+                i += 2
+                continue
+            elif token == "<" and next_token == "=":
+                result.append("<=")
+                i += 2
+                continue
+            elif token == ">" and next_token == "=":
+                result.append(">=")
+                i += 2
+                continue
+            elif token == "<" and next_token == "<":
+                result.append("<<")
+                i += 2
+                continue
+            elif token == ">" and next_token == ">":
+                result.append(">>")
+                i += 2
+                continue
+            elif token == "+" and next_token == "=":
+                result.append("+=")
+                i += 2
+                continue
+            elif token == "-" and next_token == "=":
+                result.append("-=")
+                i += 2
+                continue
+            elif token == "*" and next_token == "=":
+                result.append("*=")
+                i += 2
+                continue
+            elif token == "/" and next_token == "=":
+                result.append("/=")
+                i += 2
+                continue
+            elif token == "/" and next_token == "/":
+                # Could be // or //=
+                if i + 2 < len(tokens) and tokens[i + 2] == "=":
+                    result.append("//=")
+                    i += 3
+                    continue
+                else:
+                    result.append("//")
+                    i += 2
+                    continue
+        
+        # Add spacing
+        if result:
+            last = result[-1]
+            
+            # No space after these
+            if last in ("(", "[", "{", "\n"):
+                result.append(token)
+            # No space before these
+            elif token in (")", "]", "}", ",", ":", ";"):
+                result.append(token)
+            # No space around dots
+            elif token == "." or last == ".":
+                result.append(token)
+            else:
+                result.append(" " + token)
         else:
-            # Add indentation at start of line
-            if not current_line and indent_level > 0:
-                current_line.append("    " * indent_level)
-            
-            # Add token with appropriate spacing
-            if current_line and not token in ",:()[]{}":
-                # Add space before most tokens (except punctuation)
-                if not current_line[-1].endswith(("(", "[", "{")):
-                    current_line.append(" ")
-            
-            current_line.append(token)
+            result.append(token)
+        
+        i += 1
     
-    # Add final line
-    if current_line:
-        lines.append("".join(current_line))
-    
-    return "\n".join(lines)
+    return "".join(result)
 
 
 def validate_python(code: str) -> bool:
