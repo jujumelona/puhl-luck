@@ -13,9 +13,266 @@ class MemoryExposureMixin:
         self.id_to_feature.append(feature)
         return idx
 
+    # ------------------------------------------------------------------
+    # Transition-based exposure
+    # ------------------------------------------------------------------
+
     def expose_text(self, text: str, source: str = "text", label: Optional[str] = None) -> str:
+        """Store text as an exposure event AND record as a transition.
+
+        Every call contributes to the transition memory as a completed state
+        (the full text is the "complete" half of some earlier partial context).
+        When text is long enough it also produces a partial→complete pair
+        automatically by splitting at a natural midpoint.
+        """
         features, sequence, preview = self.extract_text(text)
-        return self.expose_event("text", features, sequence, source=source, label=label, preview=preview)
+        event_id = self.expose_event("text", features, sequence, source=source, label=label, preview=preview)
+
+        # ---- Build & store the partial → complete transition ----
+        self._maybe_store_self_transition(text, features, sequence, source)
+
+        return event_id
+
+    def expose_pair(
+        self,
+        partial: str,
+        complete: str,
+        continuation: Optional[str] = None,
+        source: str = "text",
+        label: Optional[str] = None,
+        domain: str = "conversation",
+        modality: str = "text",
+    ) -> Tuple[str, str]:
+        """Primary method for transition learning.
+
+        Stores a (partial context → continuation → completed state) triple.
+        The *partial* is what we observed first (incomplete state).
+        The *continuation* is an optional intermediate step.
+        The *complete* is the final resolved state.
+
+        Examples
+        --------
+        Question fragment → answer fragment → full Q&A:
+            brain.expose_pair("what is HDC?", "HDC 는 초고차원 벡터를 이용한 ...메모리다.", domain="conversation")
+
+        Incomplete code → next line → runnable code:
+            brain.expose_pair("def foo(x):", "    return x * 2", "def foo(x):\n    return x * 2", domain="code")
+
+        Partial explanation → next step → full explanation:
+            brain.expose_pair("먼저 활성화 에너지를", "측정하고 그 다음 결과를 비교한다.", domain="reasoning")
+        """
+        # 1. Store both sides as exposure events
+        p_features, p_seq, p_preview = self.extract_text(partial)
+        c_features, c_seq, c_preview = self.extract_text(complete)
+
+        partial_id = self.expose_event("text", p_features, p_seq, source=source, label=label, preview=p_preview)
+        complete_id = self.expose_event("text", c_features, c_seq, source=source, label=label, preview=c_preview)
+
+        if continuation:
+            cont_features, cont_seq, cont_preview = self.extract_text(continuation)
+            self.expose_event("text", cont_features, cont_seq, source=source, preview=cont_preview)
+
+        # 2. Build StateField representations for transition storage
+        partial_field = self._features_to_state_field(p_features, p_seq)
+        complete_field = self._features_to_state_field(c_features, c_seq)
+
+        # 3. Store the transition in the TransitionMemoryLayer
+        transition_layer = getattr(self, "_transition_layer", None)
+        if transition_layer is not None:
+            transition_layer.store_transition(
+                partial=partial_field,
+                complete=complete_field,
+                modality=modality,
+                domain=domain,
+            )
+            self._pending_induction_count = getattr(self, "_pending_induction_count", 0) + 1
+
+        # 4. Learn the actual surface answer for this partial state.
+        # This is the missing bridge from internal transition memory to real output.
+        surface_layer = getattr(self, "_surface_layer", None)
+        if surface_layer is not None:
+            state_pattern = "|".join(sorted(p_features[:10]))
+            surface_text = (continuation or complete).strip()
+            surface_features = cont_features if continuation else c_features
+            surface_layer.learn_surface_form(
+                state_pattern=state_pattern,
+                surface_text=surface_text,
+                modality=modality,
+                features=surface_features,
+            )
+
+        # 5. TOKEN-LEVEL LEARNING for code domain
+        # Split complete answer into tokens and store token transitions
+        if domain == "code" and transition_layer is not None:
+            self._store_token_level_transitions(partial, complete, continuation, transition_layer)
+
+        # 6. Periodically induce operators from accumulated transitions
+        self._maybe_induce_operators()
+
+        return partial_id, complete_id
+
+    # ------------------------------------------------------------------
+    # Helpers for transition support
+    # ------------------------------------------------------------------
+
+    def _features_to_state_field(self, features: List[str], sequence: List[str]):
+        """Build a minimal StateField from raw feature/sequence lists."""
+        from ._memory_field_core import StateField
+
+        try:
+            from ._brain_hdc import bundle_hv
+            hv = bundle_hv([self.feature_id(f) for f in features[:64]], self.hdc_bits)
+        except Exception:
+            import numpy as np
+            hv = np.zeros(max(1, getattr(self, "hdc_bits", 256)), dtype=np.int8)
+
+        return StateField(
+            query_features=features[:64],
+            query_hv=hv,
+            activated_events={},
+            activated_concepts={},
+            activated_operators={},
+            conflict_markers=[],
+            goal_states=[],
+            partial_outputs=[],
+            resonance={},
+            field_energy=None,
+            previous_outputs=[],
+            iteration=0,
+        )
+
+    def _maybe_store_self_transition(
+        self,
+        text: str,
+        features: List[str],
+        sequence: List[str],
+        source: str,
+    ) -> None:
+        """Auto-split long text into partial→complete and store the transition."""
+        transition_layer = getattr(self, "_transition_layer", None)
+        if transition_layer is None:
+            return
+
+        tokens = [s.split(":", 1)[1] for s in sequence if s.startswith("text:")]
+        if len(tokens) < 6:
+            return  # Too short to split meaningfully
+
+        split = len(tokens) // 2
+        partial_tokens = tokens[:split]
+        complete_tokens = tokens
+
+        partial_text = " ".join(partial_tokens)
+        complete_text = " ".join(complete_tokens)
+
+        p_features, p_seq, _ = self.extract_text(partial_text)
+        c_features, c_seq, _ = self.extract_text(complete_text)
+
+        partial_field = self._features_to_state_field(p_features, p_seq)
+        complete_field = self._features_to_state_field(c_features, c_seq)
+
+        # Infer domain from source
+        domain = "code" if any(s in source for s in (".py", ".js", ".ts", ".rs", ".cpp", ".c", ".java")) else "conversation"
+
+        transition_layer.store_transition(
+            partial=partial_field,
+            complete=complete_field,
+            modality="text",
+            domain=domain,
+        )
+        
+        # CRITICAL: Learn surface form mapping (state → actual text)
+        surface_layer = getattr(self, "_surface_layer", None)
+        if surface_layer is not None:
+            # State pattern: combination of partial features
+            state_pattern = "|".join(sorted(p_features[:10]))
+            
+            # Surface text: the ANSWER/CONTINUATION only (not full complete)
+            surface_text = complete_text.strip()
+            
+            # Learn this mapping
+            surface_layer.learn_surface_form(
+                state_pattern=state_pattern,
+                surface_text=surface_text,
+                modality="text",
+                features=c_features,
+            )
+        
+        self._pending_induction_count = getattr(self, "_pending_induction_count", 0) + 1
+
+    def _maybe_induce_operators(self, force: bool = False) -> None:
+        """Trigger operator induction from accumulated transitions (every N transitions)."""
+        induction_interval = 6  # induce operators every 6 new transitions
+        pending = getattr(self, "_pending_induction_count", 0)
+        if not force and pending < induction_interval:
+            return
+
+        transition_layer = getattr(self, "_transition_layer", None)
+        operator_layer = getattr(self, "_operator_layer", None)
+        induction = getattr(self, "_operator_induction", None)
+
+        if transition_layer is None or operator_layer is None or induction is None:
+            return
+
+        transitions = list(transition_layer.transitions.values())
+        if len(transitions) < 3:
+            return
+
+        new_operators = induction.induce_from_history(
+            transitions,
+            min_pattern_count=2,
+            similarity_threshold=0.4,
+        )
+        for op in new_operators:
+            operator_layer.store_operator(op)
+
+        self._pending_induction_count = 0
+
+    def _store_token_level_transitions(
+        self,
+        partial: str,
+        complete: str,
+        continuation: Optional[str],
+        transition_layer,
+    ) -> None:
+        """
+        Store token-level transitions for code generation.
+        
+        KEY: Store only the NEW tokens (answer part), not the entire complete text.
+        """
+        from ._memory_tokenization import tokenize_code
+        
+        # Determine what's NEW (the answer/continuation)
+        if continuation:
+            # Explicit continuation provided
+            answer_text = continuation
+        else:
+            # Extract answer from complete by removing partial prefix
+            # Simple heuristic: if complete starts with partial, take remainder
+            if complete.startswith(partial):
+                answer_text = complete[len(partial):].lstrip()
+            else:
+                # Fallback: use complete as-is
+                answer_text = complete
+        
+        # Tokenize
+        try:
+            partial_tokens = tokenize_code(partial)
+            answer_tokens = tokenize_code(answer_text)
+        except Exception:
+            partial_tokens = partial.split()
+            answer_tokens = answer_text.split()
+        
+        # Store: partial + answer[:i] → answer[i]
+        for i in range(len(answer_tokens)):
+            context = partial_tokens + answer_tokens[:i]
+            next_token = answer_tokens[i]
+            
+            transition_layer.store_token_transition(
+                context_tokens=context,
+                next_token=next_token,
+                modality="code",
+                domain="code",
+            )
 
     def expose_file(self, path: str | Path, label: Optional[str] = None) -> str:
         p = Path(path)

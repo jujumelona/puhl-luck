@@ -1,0 +1,32 @@
+[package]
+name = "puhl_luck_core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "puhl_luck_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.23", features = ["extension-module"] }
+numpy = "0.23"
+ndarray = "0.15"
+rayon = "1.10"
+ahash = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.release]
+opt-level = 3
+lto = "fat"  # Full LTO for maximum inlining
+codegen-units = 1  # Single codegen unit for better optimization
+panic = "abort"  # Smaller binary, faster unwinding
+strip = true  # Strip symbols
+
+# Performance tuning
+[profile.release.package."*"]
+opt-level = 3
+
+# CPU-specific optimizations (user must set RUSTFLAGS)
+# Set: RUSTFLAGS="-C target-cpu=native" for maximum performance
+# This enables AVX2/AVX-512 automatically on supported CPUs

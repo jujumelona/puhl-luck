@@ -6,6 +6,7 @@ from ._memory_generation import MemoryGenerationMixin
 from ._memory_learning import MemoryLearningMixin
 from ._memory_persistence import MemoryPersistenceMixin
 from ._memory_ranking import MemoryRankingMixin
+from ._memory_transition_mixin import MemoryTransitionMixin
 
 
 class BrainMemory(
@@ -13,8 +14,9 @@ class BrainMemory(
     MemoryRankingMixin,
     MemoryGenerationMixin,
     MemoryPersistenceMixin,
+    MemoryTransitionMixin,
 ):
-    """Unified non-gradient event memory."""
+    """Unified non-gradient event memory with transition learning and field-based generation."""
     def __init__(self, window_size: int = 12, decay: float = 0.72):
         self.window_size = int(window_size)
         self.decay = float(decay)
@@ -54,6 +56,9 @@ class BrainMemory(
         self._rank_result_cache: Dict[Tuple[int, str, Tuple[str, ...]], Tuple[int, List[float]]] = {}
         self._feature_weight_cache: Dict[str, float] = {}
         self.rank_mode = "event"
+
+        # Initialise transition / operator / surface layers (Layer 3, 4, 8)
+        self._init_transition_layers()
 
 
 
