@@ -1,0 +1,22 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "puhl-luck"
+version = "0.1.0"
+description = "Unified non-gradient brain memory for text, image, audio, and byte events"
+requires-python = ">=3.9"
+dependencies = ["numpy"]
+
+[project.scripts]
+puhl-luck = "puhl_luck.cli:main"
+
+[tool.maturin]
+python-source = "."
+module-name = "puhl_luck.puhl_luck_core"
+manifest-path = "rust_core/Cargo.toml"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["puhl_luck*"]

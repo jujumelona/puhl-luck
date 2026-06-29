@@ -1,0 +1,71 @@
+{
+  "timestamp": "2026-06-30 01:07:50",
+  "results": {
+    "code_generation": {
+      "task": "code_generation",
+      "accuracy": 1.0,
+      "avg_inference_ms": 466.20683670043945,
+      "train_time_ms": 7222.276210784912,
+      "targets": {
+        "accuracy_target": 0.85,
+        "speed_target": 50,
+        "train_speed_target": 1000
+      },
+      "status": {
+        "accuracy_pass": true,
+        "speed_pass": false,
+        "train_speed_pass": false
+      }
+    },
+    "classification": {
+      "task": "classification",
+      "accuracy": 0.2,
+      "avg_inference_ms": 25.1131534576416,
+      "targets": {
+        "accuracy_target": 0.85,
+        "speed_target": 20
+      },
+      "status": {
+        "accuracy_pass": false,
+        "speed_pass": false
+      }
+    },
+    "pattern_matching": {
+      "task": "pattern_matching",
+      "accuracy": 0.0,
+      "avg_inference_ms": 46.62761688232422,
+      "targets": {
+        "accuracy_target": 0.85,
+        "speed_target": 20
+      },
+      "status": {
+        "accuracy_pass": false,
+        "speed_pass": false
+      }
+    },
+    "question_answering": {
+      "task": "question_answering",
+      "accuracy": 0.0,
+      "avg_inference_ms": 65.33507506052653,
+      "targets": {
+        "accuracy_target": 0.85,
+        "speed_target": 50
+      },
+      "status": {
+        "accuracy_pass": false,
+        "speed_pass": false
+      }
+    },
+    "memory_usage": {
+      "task": "memory_usage",
+      "pairs_tested": 100,
+      "memory_mb": 32.988200187683105,
+      "estimated_10k_mb": 3298.8200187683105,
+      "target_mb": 500,
+      "status": {
+        "memory_pass": false
+      }
+    }
+  },
+  "report": "================================================================================\nFINAL CHECKPOINT VALIDATION REPORT\n================================================================================\n\nOverall Status: 1/10 checks passed (10.0%)\n\nDETAILED RESULTS:\n--------------------------------------------------------------------------------\n\nCODE GENERATION:\n  Accuracy: 100.0% (target: >85%) - \u2713\n  Speed: 466.2ms (target: <50ms) - \u2717\n  Training: 7222.3ms (target: <1000ms) - \u2717\n\nCLASSIFICATION:\n  Accuracy: 20.0% (target: >85%) - \u2717\n  Speed: 25.1ms (target: <20ms) - \u2717\n\nPATTERN MATCHING:\n  Accuracy: 0.0% (target: >85%) - \u2717\n  Speed: 46.6ms (target: <20ms) - \u2717\n\nQUESTION ANSWERING:\n  Accuracy: 0.0% (target: >85%) - \u2717\n  Speed: 65.3ms (target: <50ms) - \u2717\n\nMEMORY USAGE:\n  Memory (10K pairs): 3298.8 MB (target: <500 MB) - \u2717\n\n--------------------------------------------------------------------------------\nBEFORE/AFTER COMPARISON:\n--------------------------------------------------------------------------------\n\nAccuracy:\n  Before: 33.3%\n  After:  30.0%\n  Change: -10.0%\n\nSpeed:\n  Before: 319.9ms\n  After:  150.8ms\n  Change: +52.8%\n\n--------------------------------------------------------------------------------\nRECOMMENDATIONS:\n--------------------------------------------------------------------------------\n\n\u2022 Optimize code_generation speed: Enable Rust acceleration, optimize sparse table lookups, or reduce context window\n\u2022 Optimize training speed: Batch updates, reduce feature extraction overhead\n\u2022 Improve classification accuracy: Consider more training data, better hyperparameters, or enhanced credit assignment\n\u2022 Optimize classification speed: Enable Rust acceleration, optimize sparse table lookups, or reduce context window\n\u2022 Improve pattern_matching accuracy: Consider more training data, better hyperparameters, or enhanced credit assignment\n\u2022 Optimize pattern_matching speed: Enable Rust acceleration, optimize sparse table lookups, or reduce context window\n\u2022 Improve question_answering accuracy: Consider more training data, better hyperparameters, or enhanced credit assignment\n\u2022 Optimize question_answering speed: Enable Rust acceleration, optimize sparse table lookups, or reduce context window\n\u2022 Reduce memory usage: Implement sparse storage, prune low-frequency entries, enable compression\n\n================================================================================"
+}

@@ -1,0 +1,65 @@
+{
+  "best_accuracy": {
+    "config": {
+      "context_window": 3,
+      "rare_token_threshold": 1,
+      "top_k": 1
+    },
+    "config_str": "K=3, rare=1, top_k=1",
+    "avg_accuracy": 0.17291666666666666,
+    "avg_speed": 953.1034166614214,
+    "min_accuracy": 0.0,
+    "max_speed": 3581.525945663452,
+    "accuracy_std": 0.14474294743901459,
+    "speed_std": 1518.0594417479415
+  },
+  "best_speed": {
+    "config": {
+      "context_window": 3,
+      "rare_token_threshold": 3,
+      "top_k": 1
+    },
+    "config_str": "K=3, rare=3, top_k=1",
+    "avg_accuracy": 0.17291666666666666,
+    "avg_speed": 623.9265099167824,
+    "min_accuracy": 0.0,
+    "max_speed": 2266.801166534424,
+    "accuracy_std": 0.14474294743901459,
+    "speed_std": 949.1598874321637
+  },
+  "best_balanced": {
+    "config": {
+      "context_window": 3,
+      "rare_token_threshold": 3,
+      "top_k": 1
+    },
+    "config_str": "K=3, rare=3, top_k=1",
+    "avg_accuracy": 0.17291666666666666,
+    "avg_speed": 623.9265099167824,
+    "min_accuracy": 0.0,
+    "max_speed": 2266.801166534424,
+    "accuracy_std": 0.14474294743901459,
+    "speed_std": 949.1598874321637
+  },
+  "best_robust": {
+    "config": {
+      "context_window": 3,
+      "rare_token_threshold": 1,
+      "top_k": 1
+    },
+    "config_str": "K=3, rare=1, top_k=1",
+    "avg_accuracy": 0.17291666666666666,
+    "avg_speed": 953.1034166614214,
+    "min_accuracy": 0.0,
+    "max_speed": 3581.525945663452,
+    "accuracy_std": 0.14474294743901459,
+    "speed_std": 1518.0594417479415
+  },
+  "total_configurations_tested": 64,
+  "domains_tested": [
+    "code_completion",
+    "classification",
+    "pattern_matching",
+    "qa"
+  ]
+}

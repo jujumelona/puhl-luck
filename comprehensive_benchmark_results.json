@@ -1,0 +1,42 @@
+{
+  "results": [
+    {
+      "system_name": "N-gram (n=3)",
+      "accuracy_code": 0.0,
+      "accuracy_text": 0.0,
+      "inference_ms": 0.0058650970458984375,
+      "training_ms": 1.3709068298339844,
+      "memory_mb": 10.357109069824219,
+      "model_size_mb": 10.357109069824219,
+      "requires_gpu": false,
+      "supports_incremental": true,
+      "notes": "Traditional statistical language model"
+    },
+    {
+      "system_name": "scikit-learn RF",
+      "accuracy_code": 0,
+      "accuracy_text": 60.0,
+      "inference_ms": 25.361919403076172,
+      "training_ms": 338.13953399658203,
+      "memory_mb": 50,
+      "model_size_mb": 5,
+      "requires_gpu": false,
+      "supports_incremental": false,
+      "notes": "Traditional ML classifier"
+    },
+    {
+      "system_name": "GPT-2 Small (117M)",
+      "accuracy_code": 66.66666666666666,
+      "accuracy_text": 0.0,
+      "inference_ms": 886.0575755437216,
+      "training_ms": 0,
+      "memory_mb": 500,
+      "model_size_mb": 510,
+      "requires_gpu": false,
+      "supports_incremental": false,
+      "notes": "Pre-trained transformer, no incremental learning"
+    }
+  ],
+  "comparison_table": "\n================================================================================\nCOMPETITIVE COMPARISON TABLE\n================================================================================\n\n| Metric | N-gram (n=3) | scikit-learn RF | GPT-2 Small (117M) |\n|--------|--------|--------|--------|\n| Code Accuracy | 0.0% | 0.0% | 66.7% |\n| Text Accuracy | 0.0% | 60.0% | 0.0% |\n| Inference (ms) | 0.01 | 25.36 | 886.06 |\n| Training (ms) | 1.37 | 338.14 | 0.00 |\n| Memory (MB) | 10.4 | 50.0 | 500.0 |\n| Model Size (MB) | 10.4 | 5.0 | 510.0 |\n| GPU Required | No | No | No |\n| Incremental | Yes | No | No |",
+  "analysis": "\n================================================================================\nCOMPETITIVE ANALYSIS\n================================================================================\n\n\n\ud83c\udfc6 RECOMMENDATION:\n  HDC excels for:\n    - Edge devices (no GPU, small model)\n    - Incremental/online learning scenarios\n    - Resource-constrained environments\n\n  Consider alternatives for:\n    - Maximum accuracy requirements\n    - Batch inference workloads\n    - When pre-trained models suffice"
+}

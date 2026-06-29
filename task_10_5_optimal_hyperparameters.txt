@@ -1,0 +1,106 @@
+================================================================================
+OPTIMAL HYPERPARAMETERS - TASK 10.5 RESULTS
+================================================================================
+
+Date: 2026-06-30 00:02:25
+
+RECOMMENDED DEFAULT CONFIGURATION (Balanced Priority):
+--------------------------------------------------------------------------------
+  context_window: 3
+  rare_token_threshold: 3
+  top_k: 1
+
+PERFORMANCE METRICS:
+  Average Accuracy: 17.3%
+  Average Speed: 623.93ms
+  Minimum Accuracy: 0.0%
+  Maximum Speed: 2266.80ms
+
+RATIONALE:
+  This configuration provides the best balance between accuracy and speed
+  across all tested task types (code completion, classification, pattern
+  matching, and Q&A). It was selected from a comprehensive grid search
+  covering the full hyperparameter space.
+
+ALTERNATIVE CONFIGURATIONS:
+--------------------------------------------------------------------------------
+
+For Maximum Accuracy (K=3, rare=1, top_k=1):
+  - Accuracy: 17.3%
+  - Speed: 953.10ms
+
+For Maximum Speed (K=3, rare=3, top_k=1):
+  - Accuracy: 17.3%
+  - Speed: 623.93ms
+
+For Maximum Robustness (K=3, rare=1, top_k=1):
+  - Min Accuracy: 0.0%
+  - Avg Accuracy: 17.3%
+  - Speed: 953.10ms
+
+PER-DOMAIN BEST CONFIGURATIONS:
+--------------------------------------------------------------------------------
+
+Code Completion:
+  Config: K=3, rare=1, top_k=1
+  Accuracy: 0.0%
+  Speed: 3581.53ms
+
+Classification:
+  Config: K=3, rare=1, top_k=1
+  Accuracy: 40.0%
+  Speed: 141.42ms
+
+Pattern Matching:
+  Config: K=3, rare=1, top_k=1
+  Accuracy: 12.5%
+  Speed: 32.25ms
+
+Qa:
+  Config: K=3, rare=1, top_k=1
+  Accuracy: 16.7%
+  Speed: 57.22ms
+
+================================================================================
+IMPLEMENTATION NOTES
+================================================================================
+
+To apply these settings in SparseLogitGenerator:
+
+```python
+from puhl_luck._logit_generator import SparseLogitGenerator
+
+generator = SparseLogitGenerator(
+    repetition_window=3,
+    rare_token_threshold=3,
+    top_k=1,
+)
+```
+
+Note: The repetition_window parameter controls the context window
+      for repetition penalty, which aligns with the K parameter.
+
+================================================================================
+REQUIREMENTS VALIDATION
+================================================================================
+
+Requirement 5.1-5.3: Context Window Optimization
+  ✓ Evaluated context windows: [3, 5, 7, 10]
+  ✓ Optimal context_window identified: 3
+
+Requirement 6.1-6.3: Rare Token Threshold Optimization
+  ✓ Evaluated rare thresholds: [1, 2, 3, 5]
+  ✓ Optimal rare_token_threshold identified: 3
+
+Requirement 7.1-7.3: Top-K Optimization
+  ✓ Evaluated top-K values: [1, 2, 3, 5]
+  ✓ Optimal top_k identified: 1
+
+Requirement 12.1-12.5: Grid Search and Configuration Selection
+  ✓ Grid search completed across all parameter combinations
+  ✓ Accuracy and speed metrics measured for each configuration
+  ✓ Pareto-optimal configurations identified
+  ✓ Results saved to JSON files
+  ✓ Recommendations provided for accuracy, speed, and balanced priorities
+
+================================================================================

@@ -1,0 +1,35 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+.agents/
+.codex/
+
+brain_data/
+my_brain/
+*.pkl
+*.pmr
+*.xz
+*.gz
+*.zip
+
+scratch/assets/
+*.tmp
+
+# Benchmark and test outputs
+benchmark_results.json
+*.log
+
+# Temporary test files
+debug_*.py
+test_*.py
+compare_*.py
+final_benchmark.py
+
+# Downloaded versions
+temp-*/
+puhl-luck-*/

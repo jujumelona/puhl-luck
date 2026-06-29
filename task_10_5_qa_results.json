@@ -1,0 +1,1025 @@
+{
+  "timestamp": "2026-06-30T00:02:25.209745",
+  "domain": "qa",
+  "training_examples": 12,
+  "test_examples": 6,
+  "search_space": {
+    "context_windows": [
+      3,
+      5,
+      7,
+      10
+    ],
+    "rare_thresholds": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "top_k_values": [
+      1,
+      2,
+      3,
+      5
+    ]
+  },
+  "all_results": [
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 1,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 57.21751848856608,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 1,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 61.271071434020996,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 1,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 58.16407998402914,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 1,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 66.41213099161784,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 2,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 59.30666128794352,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 2,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 60.44451395670573,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 2,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 60.31270821889242,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 2,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 55.996457735697426,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 3,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 53.997039794921875,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 3,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 56.314826011657715,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 3,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 59.58569049835205,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 3,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 56.554953257242836,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 5,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 72.62297471364339,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 5,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 62.40244706471761,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 5,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 62.79170513153076,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 3,
+        "rare_token_threshold": 5,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 53.17838986714681,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 1,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 62.14582920074463,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 1,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 59.554060300191246,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 1,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 59.391419092814125,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 1,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 62.82536188761393,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 2,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 52.44537194569906,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 2,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 56.21520678202311,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 2,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 76.6525665918986,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 2,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 59.23155943552653,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 3,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 58.47307046254476,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 3,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 57.396531105041504,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 3,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 58.987935384114586,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 3,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 64.5823876063029,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 5,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 72.3116397857666,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 5,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 60.2035125096639,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 5,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 56.6262404123942,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 5,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 80.63824971516927,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 1,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 60.22679805755615,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 1,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 81.72945181528728,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 1,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 63.55361143747965,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 1,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 64.75118796030681,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 2,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 61.82201703389486,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 2,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 62.99245357513428,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 2,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 61.26983960469564,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 2,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 60.31644344329834,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 3,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 64.85191980997722,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 3,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 97.44123617808025,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 3,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 81.12895488739014,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 3,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 60.788472493489586,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 5,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 59.09423033396403,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 5,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 61.138669649759926,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 5,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 80.8395544687907,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 7,
+        "rare_token_threshold": 5,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 70.4943339029948,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 1,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 64.40420945485432,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 1,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 87.64119942982991,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 1,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 66.9406255086263,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 1,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 86.6774320602417,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 2,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 107.3388655980428,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 2,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 117.85876750946045,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 2,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 70.45253117879231,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 2,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 85.40280659993489,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 3,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 83.24730396270752,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 3,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 70.30610243479411,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 3,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 77.77738571166992,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 3,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 87.83257007598877,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 5,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 88.54273955027263,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 5,
+        "top_k": 2
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 96.94461027781169,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 5,
+        "top_k": 3
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 58.489044507344566,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    },
+    {
+      "config": {
+        "context_window": 10,
+        "rare_token_threshold": 5,
+        "top_k": 5
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 62.263687451680504,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    }
+  ],
+  "best_accuracy_config": {
+    "config": {
+      "context_window": 3,
+      "rare_token_threshold": 1,
+      "top_k": 1
+    },
+    "accuracy": 0.16666666666666666,
+    "avg_inference_time_ms": 57.21751848856608
+  },
+  "best_speed_config": {
+    "config": {
+      "context_window": 5,
+      "rare_token_threshold": 2,
+      "top_k": 1
+    },
+    "accuracy": 0.16666666666666666,
+    "avg_inference_time_ms": 52.44537194569906
+  },
+  "pareto_front": [
+    {
+      "config": {
+        "context_window": 5,
+        "rare_token_threshold": 2,
+        "top_k": 1
+      },
+      "accuracy": 0.16666666666666666,
+      "avg_inference_time_ms": 52.44537194569906,
+      "total_tests": 6,
+      "passed": 1,
+      "failed": 5,
+      "empty_outputs": 0,
+      "avg_backoff_level": 0.0,
+      "copy_gate_activations": 0
+    }
+  ],
+  "total_evaluations": 64,
+  "total_time_ms": 114143.86343955994
+}

@@ -1,0 +1,70 @@
+PUHL-LUCK v0.1.0 Release Notes
+===============================
+
+🚀 First Release: Transition-Based Learning + Rust Acceleration
+
+## What's New
+
+### Core Features
+- 9-layer Predictive Field Memory architecture
+- Transition-based learning: expose_pair(partial, complete)
+- Automatic operator induction from repeated patterns
+- Full generate() pipeline with field-based candidate emergence
+
+### Performance ⚡
+- Rust acceleration: 10-20× speedup on hot paths
+- Transition search: ~12ms per query (200 transitions)
+- Operator clustering: ~240ms (150 transitions)
+- 313 tests passing in 20.43s
+
+### Rust Modules
+- find_transitions_by_features_rust() - Parallel Jaccard search
+- greedy_cluster_transitions_rust() - Fast clustering
+- batch_completion_features_rust() - Batch operations
+- Full Python fallback if Rust not available
+
+## Requirements
+
+- Python: 3.9+ (tested on 3.14)
+- Rust (optional): 1.70+ for acceleration
+- numpy: 2.5.0
+
+## Installation
+
+```bash
+pip install -e packages/puhl_luck
+
+# Optional: Build Rust acceleration
+pip install maturin
+cd packages/puhl_luck
+python -m maturin build --release
+pip install rust_core/target/wheels/*.whl
+```
+
+## Quick Start
+
+```python
+from puhl_luck import BrainMemory
+
+brain = BrainMemory()
+brain.expose_pair("What is HDC?", "HDC uses high-dimensional vectors...")
+response = brain.generate("Explain HDC")
+```
+
+## Technical Details
+
+**Architecture**: 9 layers from event exposure to surface realization
+**Rust**: pyo3 0.23, ndarray 0.15, rayon 1.10
+**Build**: LTO, single codegen unit, CPU-specific optimizations
+**Tests**: 313 passed, 1 skipped
+
+## Known Issues
+
+- Generation quality depends on stored transition coverage
+- Rust build requires Python 3.14 or compatible version
+- abi3 compatibility limited to Python 3.9-3.13
+
+## Links
+
+Paper: https://zenodo.org/records/20851529
+Repository: https://github.com/[username]/puhl-luck

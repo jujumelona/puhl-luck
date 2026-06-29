@@ -1,0 +1,250 @@
+{
+  "timestamp": "2026-06-29T22:25:58.357926",
+  "task_results": {
+    "code": {
+      "task_type": "code",
+      "total_tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "accuracy": 1.0,
+      "avg_inference_time_ms": 1813.5645866394043,
+      "total_time_ms": 9067.822933197021,
+      "backoff_levels": {},
+      "copy_gate_activations": 0,
+      "empty_outputs": 0,
+      "empty_output_rate": 0.0,
+      "avg_backoff_level": 0.0,
+      "details": [
+        {
+          "input": "def divide(a, b):",
+          "expected": "return a / b",
+          "generated": "def divide(a):\n return a * 2",
+          "correct": true,
+          "inference_time_ms": 1755.843162536621,
+          "empty": false
+        },
+        {
+          "input": "def modulo(x, y):",
+          "expected": "return x % y",
+          "generated": "def modulo(x):\n return x * 2",
+          "correct": true,
+          "inference_time_ms": 1785.0713729858398,
+          "empty": false
+        },
+        {
+          "input": "def cube(n):",
+          "expected": "return n * n * n",
+          "generated": "def cube(n):\n return n * 2",
+          "correct": true,
+          "inference_time_ms": 1779.4976234436035,
+          "empty": false
+        },
+        {
+          "input": "def is_odd(x):",
+          "expected": "return x % 2 == 1",
+          "generated": "def is_odd(x):\n return x * 2",
+          "correct": true,
+          "inference_time_ms": 1860.5411052703857,
+          "empty": false
+        },
+        {
+          "input": "def negate(n):",
+          "expected": "return -n",
+          "generated": "def negate(n):\n return n * 2",
+          "correct": true,
+          "inference_time_ms": 1886.8696689605713,
+          "empty": false
+        }
+      ]
+    },
+    "classification": {
+      "task_type": "classification",
+      "total_tests": 5,
+      "passed": 2,
+      "failed": 3,
+      "accuracy": 0.4,
+      "avg_inference_time_ms": 105.73735237121582,
+      "total_time_ms": 528.6867618560791,
+      "backoff_levels": {},
+      "copy_gate_activations": 0,
+      "empty_outputs": 0,
+      "empty_output_rate": 0.0,
+      "avg_backoff_level": 0.0,
+      "details": [
+        {
+          "input": "Wonderful experience, absolutely loved it!",
+          "expected": "positive",
+          "generated": "neutral",
+          "correct": false,
+          "inference_time_ms": 110.68892478942871,
+          "empty": false
+        },
+        {
+          "input": "Great value for money, very pleased.",
+          "expected": "positive",
+          "generated": "negative",
+          "correct": false,
+          "inference_time_ms": 104.11572456359863,
+          "empty": false
+        },
+        {
+          "input": "Poor quality, very unhappy with purchase.",
+          "expected": "negative",
+          "generated": "negative",
+          "correct": true,
+          "inference_time_ms": 125.06246566772461,
+          "empty": false
+        },
+        {
+          "input": "Disappointing product, expected much better.",
+          "expected": "negative",
+          "generated": "neutral",
+          "correct": false,
+          "inference_time_ms": 115.99063873291016,
+          "empty": false
+        },
+        {
+          "input": "It's fine, nothing impressive.",
+          "expected": "neutral",
+          "generated": "neutral",
+          "correct": true,
+          "inference_time_ms": 72.82900810241699,
+          "empty": false
+        }
+      ]
+    },
+    "pattern": {
+      "task_type": "pattern",
+      "total_tests": 5,
+      "passed": 0,
+      "failed": 5,
+      "accuracy": 0.0,
+      "avg_inference_time_ms": 42.62890815734863,
+      "total_time_ms": 213.14454078674316,
+      "backoff_levels": {},
+      "copy_gate_activations": 0,
+      "empty_outputs": 0,
+      "empty_output_rate": 0.0,
+      "avg_backoff_level": 0.0,
+      "details": [
+        {
+          "input": "3 6 9 12",
+          "expected": "15",
+          "generated": "10",
+          "correct": false,
+          "inference_time_ms": 33.70809555053711,
+          "empty": false
+        },
+        {
+          "input": "100 200 300",
+          "expected": "400",
+          "generated": "west",
+          "correct": false,
+          "inference_time_ms": 44.367313385009766,
+          "empty": false
+        },
+        {
+          "input": "e f g h",
+          "expected": "i",
+          "generated": "west",
+          "correct": false,
+          "inference_time_ms": 48.58541488647461,
+          "empty": false
+        },
+        {
+          "input": "summer autumn winter",
+          "expected": "spring",
+          "generated": "west",
+          "correct": false,
+          "inference_time_ms": 46.138763427734375,
+          "empty": false
+        },
+        {
+          "input": "car bus train",
+          "expected": "plane",
+          "generated": "west",
+          "correct": false,
+          "inference_time_ms": 40.344953536987305,
+          "empty": false
+        }
+      ]
+    },
+    "qa": {
+      "task_type": "qa",
+      "total_tests": 6,
+      "passed": 0,
+      "failed": 6,
+      "accuracy": 0.0,
+      "avg_inference_time_ms": 50.980329513549805,
+      "total_time_ms": 305.8819770812988,
+      "backoff_levels": {},
+      "copy_gate_activations": 0,
+      "empty_outputs": 0,
+      "empty_output_rate": 0.0,
+      "avg_backoff_level": 0.0,
+      "details": [
+        {
+          "input": "What is the capital of Italy?",
+          "expected": "Rome",
+          "generated": "Paris",
+          "correct": false,
+          "inference_time_ms": 47.831058502197266,
+          "empty": false
+        },
+        {
+          "input": "What color are trees?",
+          "expected": "green",
+          "generated": "blue",
+          "correct": false,
+          "inference_time_ms": 41.46862030029297,
+          "empty": false
+        },
+        {
+          "input": "How many months in a year?",
+          "expected": "twelve",
+          "generated": "seven",
+          "correct": false,
+          "inference_time_ms": 55.799007415771484,
+          "empty": false
+        },
+        {
+          "input": "What is 5 + 5?",
+          "expected": "10",
+          "generated": "honey",
+          "correct": false,
+          "inference_time_ms": 37.756919860839844,
+          "empty": false
+        },
+        {
+          "input": "What is the opposite of big?",
+          "expected": "small",
+          "generated": "cold",
+          "correct": false,
+          "inference_time_ms": 59.45920944213867,
+          "empty": false
+        },
+        {
+          "input": "What animal says woof?",
+          "expected": "dog",
+          "generated": "cat",
+          "correct": false,
+          "inference_time_ms": 63.567161560058594,
+          "empty": false
+        }
+      ]
+    }
+  },
+  "aggregate_metrics": {
+    "total_tests": 21,
+    "total_passed": 7,
+    "total_failed": 14,
+    "overall_accuracy": 0.3333333333333333,
+    "avg_inference_time_ms": 481.6922006152925,
+    "total_execution_time_ms": 61760.13374328613,
+    "total_empty_outputs": 0,
+    "overall_empty_rate": 0.0,
+    "total_backoff_levels": {},
+    "avg_backoff_level": 0.0,
+    "total_copy_gate_activations": 0
+  }
+}
