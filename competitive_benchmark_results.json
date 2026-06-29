@@ -2,8 +2,8 @@
   "hdc_system": {
     "name": "HDC Sparse System",
     "accuracy": 1.0,
-    "avg_inference_ms": 321.92163467407227,
-    "train_time_ms": 47410.04180908203,
+    "avg_inference_ms": 307.04283714294434,
+    "train_time_ms": 46155.070304870605,
     "memory_mb": 3.4581966400146484,
     "model_size_mb": 5.187294960021973,
     "parameters": "N/A (non-parametric)",
@@ -12,8 +12,8 @@
   "ngram_baseline": {
     "name": "Trigram Baseline",
     "accuracy": 0.8,
-    "avg_inference_ms": 0.009489059448242188,
-    "train_time_ms": 0.14448165893554688,
+    "avg_inference_ms": 0.02040863037109375,
+    "train_time_ms": 0.2334117889404297,
     "memory_mb": 0.0012350082397460938,
     "model_size_mb": 0.0012350082397460938,
     "parameters": 20,
