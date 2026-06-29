@@ -6,40 +6,40 @@
       "top_k": 1
     },
     "config_str": "K=3, rare=1, top_k=1",
-    "avg_accuracy": 0.17291666666666666,
-    "avg_speed": 953.1034166614214,
+    "avg_accuracy": 0.46875,
+    "avg_speed": 279.9334501226743,
     "min_accuracy": 0.0,
-    "max_speed": 3581.525945663452,
-    "accuracy_std": 0.14474294743901459,
-    "speed_std": 1518.0594417479415
+    "max_speed": 888.4996771812439,
+    "accuracy_std": 0.31093357409581873,
+    "speed_std": 353.9606633029899
   },
   "best_speed": {
     "config": {
-      "context_window": 3,
-      "rare_token_threshold": 3,
-      "top_k": 1
+      "context_window": 7,
+      "rare_token_threshold": 2,
+      "top_k": 5
     },
-    "config_str": "K=3, rare=3, top_k=1",
-    "avg_accuracy": 0.17291666666666666,
-    "avg_speed": 623.9265099167824,
+    "config_str": "K=7, rare=2, top_k=5",
+    "avg_accuracy": 0.46875,
+    "avg_speed": 198.17817211151123,
     "min_accuracy": 0.0,
-    "max_speed": 2266.801166534424,
-    "accuracy_std": 0.14474294743901459,
-    "speed_std": 949.1598874321637
+    "max_speed": 587.1002376079559,
+    "accuracy_std": 0.31093357409581873,
+    "speed_std": 226.98862325472794
   },
   "best_balanced": {
     "config": {
-      "context_window": 3,
-      "rare_token_threshold": 3,
-      "top_k": 1
+      "context_window": 7,
+      "rare_token_threshold": 2,
+      "top_k": 5
     },
-    "config_str": "K=3, rare=3, top_k=1",
-    "avg_accuracy": 0.17291666666666666,
-    "avg_speed": 623.9265099167824,
+    "config_str": "K=7, rare=2, top_k=5",
+    "avg_accuracy": 0.46875,
+    "avg_speed": 198.17817211151123,
     "min_accuracy": 0.0,
-    "max_speed": 2266.801166534424,
-    "accuracy_std": 0.14474294743901459,
-    "speed_std": 949.1598874321637
+    "max_speed": 587.1002376079559,
+    "accuracy_std": 0.31093357409581873,
+    "speed_std": 226.98862325472794
   },
   "best_robust": {
     "config": {
@@ -48,14 +48,14 @@
       "top_k": 1
     },
     "config_str": "K=3, rare=1, top_k=1",
-    "avg_accuracy": 0.17291666666666666,
-    "avg_speed": 953.1034166614214,
+    "avg_accuracy": 0.46875,
+    "avg_speed": 279.9334501226743,
     "min_accuracy": 0.0,
-    "max_speed": 3581.525945663452,
-    "accuracy_std": 0.14474294743901459,
-    "speed_std": 1518.0594417479415
+    "max_speed": 888.4996771812439,
+    "accuracy_std": 0.31093357409581873,
+    "speed_std": 353.9606633029899
   },
-  "total_configurations_tested": 64,
+  "total_configurations_tested": 210,
   "domains_tested": [
     "code_completion",
     "classification",

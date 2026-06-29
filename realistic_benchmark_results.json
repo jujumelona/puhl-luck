@@ -1,0 +1,41 @@
+{
+  "results": [
+    {
+      "tool": "N-gram (n=3)",
+      "train_time_s": 0.0005133152008056641,
+      "memory_mb": 0.01171875,
+      "avg_latency_ms": 0.016963481903076172,
+      "accuracy": 0.7,
+      "test_cases": 20
+    },
+    {
+      "tool": "N-gram (n=5)",
+      "train_time_s": 0.00033283233642578125,
+      "memory_mb": 0.01953125,
+      "avg_latency_ms": 0.009310245513916016,
+      "accuracy": 0.1,
+      "test_cases": 20
+    },
+    {
+      "tool": "Jedi (Python)",
+      "train_time_s": 1.430511474609375e-06,
+      "memory_mb": 0.0,
+      "avg_latency_ms": 0.00035762786865234375,
+      "accuracy": 0.0,
+      "test_cases": 20
+    },
+    {
+      "tool": "HDC Sparse System",
+      "train_time_s": 9.296208381652832,
+      "memory_mb": 6.9140625,
+      "avg_latency_ms": 351.82576179504395,
+      "accuracy": 0.1,
+      "test_cases": 20
+    }
+  ],
+  "summary": {
+    "best_accuracy": "N-gram (n=3)",
+    "best_latency": "Jedi (Python)",
+    "best_memory": "Jedi (Python)"
+  }
+}
