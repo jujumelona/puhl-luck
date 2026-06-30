@@ -1,0 +1,50 @@
+{
+  "long_range": {
+    "hdc": {
+      "accuracy": 1.0,
+      "avg_inference_ms": 83.13655853271484,
+      "train_time_ms": 2429.7091960906982,
+      "memory_mb": 0.7293243408203125,
+      "status": "success"
+    },
+    "ngram": {
+      "accuracy": 0.0,
+      "avg_inference_ms": 0.007867813110351562,
+      "train_time_ms": 0.03457069396972656,
+      "memory_mb": 0.00051116943359375,
+      "status": "success"
+    }
+  },
+  "api_composition": {
+    "hdc": {
+      "accuracy": 1.0,
+      "avg_inference_ms": 41.49484634399414,
+      "train_time_ms": 1903.6509990692139,
+      "memory_mb": 0.4484682083129883,
+      "status": "success"
+    },
+    "ngram": {
+      "accuracy": 0.0,
+      "avg_inference_ms": 0.008106231689453125,
+      "train_time_ms": 0.02193450927734375,
+      "memory_mb": 0.000301361083984375,
+      "status": "success"
+    }
+  },
+  "multiline": {
+    "hdc": {
+      "accuracy": 0.0,
+      "avg_inference_ms": 191.3602352142334,
+      "train_time_ms": 3462.4783992767334,
+      "memory_mb": 0.4734325408935547,
+      "status": "success"
+    },
+    "ngram": {
+      "accuracy": 0.0,
+      "avg_inference_ms": 0.0019073486328125,
+      "train_time_ms": 0.015020370483398438,
+      "memory_mb": 0.00015735626220703125,
+      "status": "success"
+    }
+  }
+}

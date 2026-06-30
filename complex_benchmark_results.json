@@ -1,0 +1,44 @@
+{
+  "long_range": {
+    "hdc": {
+      "accuracy": 1.0,
+      "avg_inference_ms": 1561.772108078003,
+      "train_time_ms": 42139.41502571106,
+      "memory_mb": 3.3292789459228516
+    },
+    "ngram": {
+      "accuracy": 0.0,
+      "avg_inference_ms": 0.027894973754882812,
+      "train_time_ms": 0.15306472778320312,
+      "memory_mb": 0.0009765625
+    }
+  },
+  "api_composition": {
+    "hdc": {
+      "accuracy": 1.0,
+      "avg_inference_ms": 2112.929344177246,
+      "train_time_ms": 74443.44282150269,
+      "memory_mb": 4.153535842895508
+    },
+    "ngram": {
+      "accuracy": 1.0,
+      "avg_inference_ms": 0.021338462829589844,
+      "train_time_ms": 0.12540817260742188,
+      "memory_mb": 0.0010366439819335938
+    }
+  },
+  "multiline": {
+    "hdc": {
+      "accuracy": 0.5,
+      "avg_inference_ms": 5919.3044900894165,
+      "train_time_ms": 280537.85848617554,
+      "memory_mb": 9.411706924438477
+    },
+    "ngram": {
+      "accuracy": 0.0,
+      "avg_inference_ms": 0.027418136596679688,
+      "train_time_ms": 0.06985664367675781,
+      "memory_mb": 0.0012264251708984375
+    }
+  }
+}
